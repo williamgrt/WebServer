@@ -5,9 +5,13 @@ namespace gnet {
 class EventLoop {
 private:
   /* data */
+  types::PollerPtr poller_;
+
 public:
   EventLoop(/* args */);
   ~EventLoop();
+
+  types::PollerPtr GetPoller() { return poller_; }
 };
 
 EventLoop::EventLoop(/* args */) {}

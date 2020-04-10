@@ -2,16 +2,16 @@
 
 namespace gnet {
 
-Acceptor::Acceptor(EventLoop *ev) : ev_(ev), sockfd_(-1), addr_(Ip4Addr()) {}
+const int Acceptor::kListen = 1024;
+const int Acceptor::kInvalid = -1;
 
-Acceptor::~Acceptor() {
-  socket::CloseSocket(sockfd_);
-  ev_ = nullptr;
-}
+Acceptor::Acceptor() : sockfd_(Acceptor::kInvalid), addr_(Ip4Addr()) {}
+
+Acceptor::~Acceptor() { socket::CloseSocket(sockfd_); }
 
 void Acceptor::Init() {
   // 必须保证这个acceptor没有关联到一个socket上
-  assert(sockfd_ == -1);
+  assert(sockfd_ == Acceptor::kInvalid);
 
   sockfd_ = socket::CreateTCPSocket();
   if (sockfd_ == -1) {
@@ -36,14 +36,27 @@ void Acceptor::Bind(const std::string &host, unsigned short port) {
   }
 }
 
-void Acceptor::Listen(int maxWaitNum) {
+void Acceptor::Listen() {
   // 判断套接字已经打开
   assert(sockfd_ != -1);
 
-  sockfd_ = ::listen(sockfd_, maxWaitNum);
+  sockfd_ = ::listen(sockfd_, Acceptor::kListen);
   if (sockfd_ == -1) {
     error(1, errno, "listen error.");
   }
+}
+
+// TODO: designing better accrpt function
+int Acceptor::Accept(Ip4Addr &clientAddr) {
+  sockaddr_in addr = clientAddr.getAddr();
+  socklen_t len;
+
+  int connfd = ::accept(sockfd_, (sockaddr *)&addr, &len);
+  if (connfd == -1) {
+    error(1, errno, "accept error.");
+  }
+
+  return connfd;
 }
 
 } // namespace gnet
