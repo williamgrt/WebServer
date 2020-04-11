@@ -18,9 +18,9 @@ public:
   Poller(EventLoop *ev);
   ~Poller();
 
-  int AddChannel(types::ChannelPtr channel);
-  int ModifyChannel(types::ChannelPtr channel);
-  int DeleteChannel(types::ChannelPtr channel);
+  bool AddChannel(types::ChannelPtr channel);
+  bool ModifyChannel(types::ChannelPtr channel);
+  bool DeleteChannel(types::ChannelPtr channel);
 
   EventLoop *GetEv() { return ev_; }
   int GetFd() { return epollFd_; }
