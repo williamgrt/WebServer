@@ -9,6 +9,7 @@ namespace gnet {
 
 class Acceptor : public NonCopyable {
 private:
+  // acceptor和socket的生命周期一致
   int sockfd_;
   Ip4Addr addr_;
 

@@ -1,4 +1,6 @@
 set(NET_LIB
-TcpServer.cc Channel.cc EventLoop.cc Poller.cc Socket.cc)
+Channel.cc EventLoop.cc Poller.cc)
 
-add_library(server_net ${NET_LIB})
+add_library(lib_net ${NET_LIB})
+
+add_subdirectory(test)

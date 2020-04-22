@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 project(WebServer)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
+
+add_compile_options(-std=c++14)
 
 set(CXX_FLAGS
     -g
@@ -11,7 +13,7 @@ set(CXX_FLAGS
     -std=c++14
     -D_PTHREADS
     -Wno-unused-parameter
-    )
+)
 
 
 set(CMAKE_CXX_COMPILER "g++")

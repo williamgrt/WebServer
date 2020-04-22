@@ -14,10 +14,10 @@ int CreateTCPSocket();
 int CreateUDPSocket();
 void CloseSocket(int &sockfd);
 
-int SetNonBlock(int &sockfd);
-
-// 设置socket属性
+// 对socket进行设置
+void SetNonBlocking(int &sockfd);
 void SetReuseAddr(int &sockfd);
+void SetNoDelay(int &sockfd); // 禁用Nagel算法
 
 } // namespace socket
 

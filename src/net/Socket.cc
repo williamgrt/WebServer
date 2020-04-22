@@ -1,8 +1,8 @@
 #include "Socket.h"
 
 namespace gnet {
+// socket相关操作的封装函数
 namespace socket {
-
 int CreateTCPSocket() { return ::socket(AF_INET, SOCK_STREAM, 0); }
 
 int CreateUDPSocket() { return ::socket(AF_INET, SOCK_DGRAM, 0); }
@@ -17,6 +17,17 @@ void CloseSocket(int &sockfd) {
 void SetNonBlocking(int &sockfd) {
   int flag = ::fcntl(sockfd, F_GETFL, 0);
   flag = ::fcntl(sockfd, F_SETFL, flag | O_NONBLOCK);
+}
+
+void SetReuseAddr(int &sockfd) {
+  int reuse = 1;
+  ::setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const char *)&reuse,
+               sizeof(reuse));
+}
+
+void SetNoDelay(int &sockfd) {
+  int nodelay = 1;
+  ::setsockopt()
 }
 
 } // namespace socket

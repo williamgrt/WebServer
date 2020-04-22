@@ -2,6 +2,7 @@
 #define _NONCOPYABLE_H
 
 namespace gnet {
+// 不可复制的类
 class NonCopyable {
 public:
   NonCopyable();

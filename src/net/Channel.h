@@ -1,43 +1,48 @@
 #ifndef _CHANNEL_H
 #define _CHANNEL_H
 
-#include "EventLoop.h"
-#include "Poller.h"
-#include "Utils.h"
 #include <functional>
 #include <memory>
 
 namespace gnet {
-using CallBack = std::function<void()>;
+using ReadCallBack = std::function<void()>;
+using WriteCallBack = std::function<void()>;
+
+class EventLoop;
+class Poller;
 
 class Channel {
 private:
   EventLoop *ev_;
-  types::PollerPtr poller_;
   int fd_;
   short events_;
+  short revents_; // recieve events from poller.
+  int state_;
 
-  CallBack readCb_, writeCb_;
+  // 回调函数
+  ReadCallBack readCb_;
+  WriteCallBack writeCb_;
 
 public:
-  Channel(EventLoop *ev, int fd, short events);
+  Channel(EventLoop *ev, int fd);
   ~Channel();
 
-  EventLoop *GetEv() { return ev_; }
+  EventLoop *GetLoop() { return ev_; }
   int GetFd() { return fd_; }
   short GetEvents() { return events_; }
-  void Close();
+  short GetRevents() { return revents_; }
+  short SetRevents(short revents) { revents_ = revents; }
 
-  void OnRead(CallBack &read) { readCb_ = read; }
-  void OnWrite(CallBack &write) { writeCb_ = write; }
-  void OnRead(CallBack &&read) { readCb_ = std::move(read); }
-  void OnWrite(CallBack &&write) { writeCb_ = std::move(write); }
+  void SetReadCallBack(ReadCallBack &read) { readCb_ = read; }
+  void SetWriteCallBack(WriteCallBack &write) { writeCb_ = write; }
+  void SetReadCallBack(ReadCallBack &&read) { readCb_ = std::move(read); }
+  void SetWriteBallBack(WriteCallBack &&write) { writeCb_ = std::move(write); }
 
-  void SetRead(short status);
-  void SetWrite(short status);
-  void SetReadWrite(short status);
-  bool EnabledRead();
-  bool EnabledWrite();
+  void SetRead();
+  void SetWrite();
+  void SetReadWrite();
+  bool ReadEnabled();
+  bool WriteEnabled();
 
   void HandleRead() { readCb_(); }
   void HandleWrite() { writeCb_(); }

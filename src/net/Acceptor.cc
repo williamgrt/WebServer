@@ -27,7 +27,7 @@ void Acceptor::Bind(const std::string &host, unsigned short port) {
   addr_ = Ip4Addr(host, port);
   const sockaddr_in so_addr = addr_.getAddr();
 
-  socket::SetNonBlock(sockfd_);
+  socket::SetNonBlocking(sockfd_);
   socket::SetReuseAddr(sockfd_);
 
   sockfd_ = ::bind(sockfd_, (sockaddr *)(&addr_), sizeof(addr_));
