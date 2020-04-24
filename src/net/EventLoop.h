@@ -2,43 +2,36 @@
 #define _EVENTLOOP_H
 
 #include <memory>
+#include <thread>
 #include <vector>
 
-namespace gnet {
+namespace web {
 class Channel;
-class Poller;
-
-using ChannelPtr = std::shared_ptr<Channel>;
-
-// 所有eventloop的基类
-class EventLoopBase {
-public:
-  virtual EventLoopBase *GetNextLoop() = 0;
-};
+class Epoller;
 
 // 单线程版本的EventLoop
-class EventLoop : public EventLoopBase {
+class EventLoop {
 private:
-  std::unique_ptr<Poller> poller_;
-  std::vector<std::shared_ptr<Channel>>
-      channels_; // 所有绑定在该event loop上的channel
-  bool loop_;
+  bool looping_;
   bool quit_;
-  int maxEvents_;
+  int eventCapacity_;
+  std::unique_ptr<Epoller> poller_;
 
 public:
   EventLoop();
   ~EventLoop();
 
-  void AddChannel(const ChannelPtr &channel);
-  void ModifyChannel(const ChannelPtr &channel);
-  void DeleteChannel(const ChannelPtr &channel);
-
-  EventLoopBase *GetNextLoop() override { return this; }
+  void AddChannel(Channel *channel);
+  void ModifyChannel(Channel *channel);
+  void DeleteChannel(Channel *channel);
+  bool HasChannel(Channel *channel);
 
   void Loop();
+
+  void AssertInLoopThread();
+  bool LoopInThread();
 };
 
-} // namespace gnet
+} // namespace web
 
 #endif // _EVENTLOOP_H

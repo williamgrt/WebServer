@@ -7,7 +7,7 @@
 #include <string>
 #include <sys/socket.h>
 
-namespace gnet {
+namespace web {
 namespace socket {
 // 创建和销毁socket
 int CreateTCPSocket();
@@ -34,6 +34,6 @@ public:
   const sockaddr_in &getAddr() { return addr_; }
 };
 
-} // namespace gnet
+} // namespace web
 
 #endif // _SOCKET_H

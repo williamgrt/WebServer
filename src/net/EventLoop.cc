@@ -1,50 +1,54 @@
 #include "EventLoop.h"
 #include "Channel.h"
-#include "Poller.h"
+#include "Epoller.h"
+#include "Utils.h"
 #include <algorithm>
 
-__thread gnet::EventLoop *_loopInThisThread = nullptr;
+using namespace web;
 
-namespace gnet {
+__thread web::EventLoop *_loopInThisThread = nullptr; // 当前线程的eventloop
 
-EventLoop::EventLoop()
-    : poller_(new Poller(this)), loop_(false), quit_(false), maxEvents_(1024) {}
-
-EventLoop::~EventLoop() {}
-
-void EventLoop::AddChannel(const ChannelPtr &channel) {
-  channels_.push_back(channel);
-  poller_->AddChannel(channel.get());
+EventLoop::EventLoop() : poller_(new Epoller()), looping_(false), quit_(false) {
+  assert(_loopInThisThread == nullptr);
+  _loopInThisThread = this;
 }
 
-void EventLoop::ModifyChannel(const ChannelPtr &channel) {
-  poller_->ModifyChannel(channel.get());
+EventLoop::~EventLoop() {
+  looping_ = false;
+  _loopInThisThread = nullptr;
 }
 
-void EventLoop::DeleteChannel(const ChannelPtr &channel) {
-  poller_->DeleteChannel(channel.get());
-  auto ptr = channels_.begin();
-  for (; *ptr != channel && ptr != channels_.end(); ++ptr) {
-  }
-  channels_.erase(ptr);
+void EventLoop::AddChannel(Channel *channel) {
+  assert(channel != nullptr);
+  assert(channel->GetLoop() == this);
+
+  poller_->AddChannel(channel);
+}
+
+void EventLoop::ModifyChannel(Channel *channel) {
+  assert(channel != nullptr);
+  assert(channel->GetState() == Channel::kAdded);
+  assert(channel->GetLoop() == this);
+
+  poller_->ModifyChannel(channel);
+}
+
+void EventLoop::DeleteChannel(Channel *channel) {
+  poller_->DeleteChannel(channel);
 }
 
 void EventLoop::Loop() {
-  std::vector<Channel *> activeChannels;
+  assert(!looping_);
+  assert(!quit_);
 
+  // 开始循环
+  looping_ = true;
+  std::vector<Channel *> activeChannels;
   while (!quit_) {
     activeChannels.clear();
-    int nReady = poller_->Poll(maxEvents_, -1, activeChannels);
+    int nReady = poller_->Poll(eventCapacity_, -1, activeChannels);
     for (auto currChannel : activeChannels) {
-      int revents = currChannel->GetRevents();
-      if (revents & EPOLLIN) {
-        currChannel->HandleRead();
-      }
-      if (revents & EPOLLOUT) {
-        currChannel->HandleWrite();
-      }
+      currChannel->HandleEvent();
     }
   }
 }
-
-} // namespace gnet

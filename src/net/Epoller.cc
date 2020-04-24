@@ -1,22 +1,27 @@
-#include "Poller.h"
+#include "Epoller.h"
 #include "Channel.h"
 #include "EventLoop.h"
 #include "Utils.h"
 #include <cstring>
 
-namespace gnet {
-Poller::Poller(EventLoop *ev) : ev_(ev) { epollFd_ = ::epoll_create(1024); }
+using namespace web;
 
-Poller::~Poller() {
+Epoller::Epoller() {
+  epollFd_ = ::epoll_create1(EPOLL_CLOEXEC);
+  assert(epollFd_ > 0);
+}
+
+Epoller::~Epoller() {
   if (epollFd_ != -1) {
     // epoll 没有被关闭
     ::close(epollFd_);
   }
 }
 
-void Poller::AddChannel(Channel *channel) {
+void Epoller::AddChannel(Channel *channel) {
   assert(channel != nullptr);
   assert(channel->GetFd() != -1);
+  assert(channel->GetState() != Channel::kAdded);
 
   int fd = channel->GetFd();
   epoll_event event;
@@ -24,50 +29,57 @@ void Poller::AddChannel(Channel *channel) {
   event.events = channel->GetEvents() | EPOLLET; // 采用边缘触发模式
   event.data.ptr = channel;
 
-  int r = epoll_ctl(epollFd_, EPOLL_CTL_ADD, fd, &event);
+  int r = ::epoll_ctl(epollFd_, EPOLL_CTL_ADD, fd, &event);
   if (r == -1) {
     error(1, errno, "epoll add error.");
   }
 
-  fd2Event_[fd] = channel;
+  fd2Channel_[fd] = channel;
+  channel->SetState(Channel::kAdded);
 }
 
-void Poller::ModifyChannel(Channel *channel) {
+void Epoller::ModifyChannel(Channel *channel) {
   assert(channel != nullptr);
   assert(channel->GetFd() != -1);
 
   int fd = channel->GetFd();
-  assert(fd2Event_.count(fd) != 0); // 必须是列表里面出现过的channel
-  assert(fd2Event_[fd] == channel);
+  assert(fd2Channel_.count(fd) != 0); // 必须是列表里面出现过的channel
+  assert(fd2Channel_[fd] == channel);
 
   epoll_event event;
   bzero(&event, sizeof(event));
   event.events = channel->GetEvents();
   event.data.ptr = channel;
 
-  int r = epoll_ctl(epollFd_, EPOLL_CTL_MOD, fd, &event);
+  int r = ::epoll_ctl(epollFd_, EPOLL_CTL_MOD, fd, &event);
   if (r == -1) {
     perror("epoll modify error.");
   }
 }
 
-void Poller::DeleteChannel(Channel *channel) {
+void Epoller::DeleteChannel(Channel *channel) {
   assert(channel != nullptr);
   int fd = channel->GetFd();
-  assert(fd2Event_.count(fd) != 0 && fd2Event_[fd] == channel);
+  assert(fd2Channel_.count(fd) != 0 && fd2Channel_[fd] == channel);
 
-  fd2Event_.erase(fd); // 从事件集合中删除
+  epoll_event event;
+  bzero(&event, sizeof(event));
+  event.events = channel->GetEvents();
+  event.data.ptr = channel;
+
+  fd2Channel_.erase(fd); // 从事件集合中删除
   // 如果在监听的事件集中，删除这个事件
-  for (auto event : events_) {
-    if (event.data.ptr == channel) {
-      event.data.ptr = nullptr;
-      event.events = 0;
+  if (channel->GetState() == Channel::kAdded) {
+    int r = ::epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, &event);
+    if (r == -1) {
+      perror("epoll delete error.");
     }
   }
+  channel->SetState(Channel::kDeleted);
 }
 
-int Poller::Poll(int maxEvent, int waitMs,
-                 std::vector<Channel *> &activeChannels) {
+int Epoller::Poll(int maxEvent, int waitMs,
+                  std::vector<Channel *> &activeChannels) {
   // 确保epoll已经初始化
   assert(epollFd_ != -1);
   assert(maxEvent > 0);
@@ -92,5 +104,3 @@ int Poller::Poll(int maxEvent, int waitMs,
 
   return nReady;
 }
-
-} // namespace gnet

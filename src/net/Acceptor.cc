@@ -1,6 +1,6 @@
 #include "Acceptor.h"
 
-namespace gnet {
+using namespace web;
 
 const int Acceptor::kListen = 1024;
 const int Acceptor::kInvalid = -1;
@@ -58,5 +58,3 @@ int Acceptor::Accept(Ip4Addr &clientAddr) {
 
   return connfd;
 }
-
-} // namespace gnet

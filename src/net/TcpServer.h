@@ -6,7 +6,7 @@
 #include "EventLoop.h"
 #include "Utils.h"
 
-namespace gnet {
+namespace web {
 
 class TcpServer {
 public:
@@ -28,6 +28,6 @@ public:
   void HandleAccept();
 };
 
-} // namespace gnet
+} // namespace web
 
 #endif // _TCPSERVER_H

@@ -1,13 +1,13 @@
 #ifndef _TCPCONNECTION_H
 #define _TCPCONNECTION_H
 
-#include "../base/NonCopyable.h"
+#include "../base/noncopyable.h"
 #include "Channel.h"
 #include "EventLoop.h"
 #include "Socket.h"
 
-namespace gnet {
-class TcpConnection : public NonCopyable {
+namespace web {
+class TcpConnection : public noncopyable {
 private:
   int connfd_;
   EventLoop *ev_;
@@ -24,6 +24,6 @@ TcpConnection::TcpConnection(/* args */) {}
 
 TcpConnection::~TcpConnection() {}
 
-} // namespace gnet
+} // namespace web
 
 #endif // _TCPCONNECTION_H

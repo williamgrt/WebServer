@@ -1,6 +1,6 @@
 #include "Socket.h"
 
-namespace gnet {
+namespace web {
 // socket相关操作的封装函数
 namespace socket {
 int CreateTCPSocket() { return ::socket(AF_INET, SOCK_STREAM, 0); }
@@ -27,7 +27,7 @@ void SetReuseAddr(int &sockfd) {
 
 void SetNoDelay(int &sockfd) {
   int nodelay = 1;
-  ::setsockopt()
+  ::setsockopt();
 }
 
 } // namespace socket
@@ -54,4 +54,4 @@ Ip4Addr::Ip4Addr(const std::string &host, unsigned short port) {
 
 Ip4Addr::~Ip4Addr() {}
 
-} // namespace gnet
+} // namespace web

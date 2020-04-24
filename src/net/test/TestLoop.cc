@@ -1,3 +1,5 @@
+// 测试EventLoop程序功能
+
 #include "../Channel.h"
 #include "../EventLoop.h"
 #include <cstring>
@@ -5,7 +7,7 @@
 #include <memory>
 #include <sys/timerfd.h>
 
-using namespace gnet;
+using namespace web;
 using namespace std;
 
 EventLoop *currLoop;
@@ -26,9 +28,9 @@ int main() {
   ::timerfd_settime(timer, 0, &howlong, NULL);
 
   auto channel = make_shared<Channel>(&loop, timer);
-  channel->SetRead();
+  channel->SetRead(true);
   channel->SetReadCallBack(timeout);
-  loop.AddChannel(channel);
+  loop.AddChannel(channel.get());
   cout << "Start looping\n";
 
   loop.Loop();

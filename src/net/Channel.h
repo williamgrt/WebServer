@@ -3,51 +3,71 @@
 
 #include <functional>
 #include <memory>
+#include <poll.h>
 
-namespace gnet {
-using ReadCallBack = std::function<void()>;
-using WriteCallBack = std::function<void()>;
+namespace web {
+using CallBack = std::function<void()>;
 
 class EventLoop;
-class Poller;
+class Epoller;
 
 class Channel {
 private:
-  EventLoop *ev_;
+  EventLoop *loop_;
   int fd_;
-  short events_;
-  short revents_; // recieve events from poller.
+  uint32_t events_;
+  uint32_t revents_; // recieve events from poller.
   int state_;
 
   // 回调函数
-  ReadCallBack readCb_;
-  WriteCallBack writeCb_;
+  CallBack readCb_;
+  CallBack writeCb_;
+  CallBack errorCb_;
 
 public:
   Channel(EventLoop *ev, int fd);
+  Channel(EventLoop *ev);
   ~Channel();
 
-  EventLoop *GetLoop() { return ev_; }
-  int GetFd() { return fd_; }
-  short GetEvents() { return events_; }
-  short GetRevents() { return revents_; }
-  short SetRevents(short revents) { revents_ = revents; }
+  EventLoop *GetLoop() const { return loop_; }
+  int GetFd() const { return fd_; }
+  uint32_t GetEvents() const { return events_; }
+  uint32_t GetRevents() const { return revents_; }
+  int GetState() const { return state_; }
 
-  void SetReadCallBack(ReadCallBack &read) { readCb_ = read; }
-  void SetWriteCallBack(WriteCallBack &write) { writeCb_ = write; }
-  void SetReadCallBack(ReadCallBack &&read) { readCb_ = std::move(read); }
-  void SetWriteBallBack(WriteCallBack &&write) { writeCb_ = std::move(write); }
+  void SetFd(int fd);
+  void SetEvents(uint32_t events) { events_ = events; }
+  void SetRevents(uint32_t revents) { revents_ = revents; }
+  void SetState(int state);
 
-  void SetRead();
-  void SetWrite();
-  void SetReadWrite();
-  bool ReadEnabled();
-  bool WriteEnabled();
+  void SetReadCallBack(CallBack &read) { readCb_ = read; }
+  void SetWriteCallBack(CallBack &write) { writeCb_ = write; }
+  void SetErrorCallBack(CallBack &error) { errorCb_ = error; }
+  void SetReadCallBack(CallBack &&read) { readCb_ = std::move(read); }
+  void SetWriteCallBack(CallBack &&write) { writeCb_ = std::move(write); }
+  void SetErrorCallBack(CallBack &&error) { errorCb_ = std::move(error); }
 
-  void HandleRead() { readCb_(); }
-  void HandleWrite() { writeCb_(); }
+  void SetRead(bool label);
+  void SetWrite(bool label);
+  void SetError(bool label);
+
+  void HandleRead();
+  void HandleWrite();
+  void HandleError();
+  void HandleEvent();
+
+  // 表示一个channel的状态：新建的、添加到循环中的、删除的
+  static const int kNew = -1;
+  static const int kAdded = 1;
+  static const int kDeleted = 2;
+
+  // channel事件
+  const int kNoneEvent = 0;
+  const int kReadEvent = POLLIN | POLLPRI;
+  const int kWriteEvent = POLLOUT;
+  const int kErrorEvent = POLLERR;
 };
 
-} // namespace gnet
+} // namespace web
 
 #endif // _CHANNEL_H

@@ -1,6 +1,6 @@
 #include "TcpServer.h"
 
-namespace gnet {
+namespace web {
 
 TcpServer::TcpServer(EventLoop *ev)
     : ev_(ev), acceptor_(new Acceptor()), state_(-1) {}
@@ -11,4 +11,4 @@ types::TcpServerPtr TcpServer::Start(const std::string &host,
   acceptor_->Bind(host, port);
 }
 
-} // namespace gnet
+} // namespace web

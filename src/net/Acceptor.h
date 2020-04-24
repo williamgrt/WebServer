@@ -1,17 +1,26 @@
 #ifndef _ACCEPTOR_H
 #define _ACCEPTOR_H
 
-#include "../base/NonCopyable.h"
+#include "../base/noncopyable.h"
+#include "Channel.h"
 #include "EventLoop.h"
 #include "Socket.h"
+#include <memory>
+#include <string>
 
-namespace gnet {
+namespace web {
 
-class Acceptor : public NonCopyable {
+class Ip4Addr;
+class Channel;
+class EventLoop;
+
+class Acceptor : public noncopyable {
 private:
   // acceptor和socket的生命周期一致
   int sockfd_;
   Ip4Addr addr_;
+  EventLoop *loop_;
+  std::unique_ptr<Channel> listenChannel_; // 监听套接字
 
   // 最大监听数
   static const int kListen;
@@ -33,6 +42,6 @@ public:
   int Accept(Ip4Addr &clientAddr);
 };
 
-} // namespace gnet
+} // namespace web
 
 #endif // _ACCEPTOR_H
