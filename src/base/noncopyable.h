@@ -5,8 +5,8 @@ namespace web {
 // 不可复制的类
 class noncopyable {
 public:
-  noncopyable();
-  ~noncopyable();
+  noncopyable(){};
+  ~noncopyable(){};
 
   noncopyable(const noncopyable &) = delete;
   noncopyable &operator=(const noncopyable &) = delete;
