@@ -7,8 +7,11 @@
 using namespace web;
 
 __thread web::EventLoop *_loopInThisThread = nullptr; // 当前线程的eventloop
+const int MAXEVENT = 1024;
 
-EventLoop::EventLoop() : poller_(new Epoller()), looping_(false), quit_(false) {
+EventLoop::EventLoop()
+    : poller_(new Epoller()), looping_(false), quit_(false),
+      eventCapacity_(MAXEVENT) {
   assert(_loopInThisThread == nullptr);
   _loopInThisThread = this;
 }

@@ -21,14 +21,15 @@ private:
   std::string name_;
 
   // 线程计数器
-  static std::atomic<int> numCreated_;
+  static std::atomic<int> numGenerated_;
 
 public:
-  Thread(Functor threadFunc, const std::string &name = std::string());
+  Thread(Functor threadFunc, const std::string &name);
   ~Thread();
 
   std::string GetName() const { return name_; }
   pthread_t GetThreadId() const { return threadId_; }
+  Functor GetThreadFunc() const { return threadFunc_; }
 
   void Start();
   void Join();
@@ -42,8 +43,6 @@ struct ThreadData {
   ThreadData(Functor func, std::string name, pthread_t id)
       : threadFunc(func), threadName(name), threadId(id) {}
 };
-
-void *RunTheadFun(void *);
 
 } // namespace web
 

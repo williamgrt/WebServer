@@ -1,5 +1,6 @@
-set(BASE_LIB NonCopyable.h)
+set(BASE_LIB noncopyable.h Thread.cc)
 
-add_library(server_base ${BASE_LIB})
+add_library(libbase ${BASE_LIB})
+target_link_libraries(libbase pthread rt)
 
 add_subdirectory(test)
