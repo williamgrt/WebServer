@@ -5,6 +5,11 @@
 
 using namespace web;
 
+const int Channel::kNoneEvent = 0;
+const int Channel::kReadEvent = POLLIN | POLLPRI;
+const int Channel::kWriteEvent = POLLOUT;
+const int Channel::kErrorEvent = POLLERR;
+
 Channel::Channel(EventLoop *loop, int fd)
     : loop_(loop), fd_(fd), events_(kNoneEvent), revents_(kNoneEvent),
       state_(kNew) {}

@@ -4,6 +4,13 @@
 #include "noncopyable.h"
 #include <pthread.h>
 
+#define MCHECK(ret)                                                            \
+  ({                                                                           \
+    __typeof__(ret) errnum = (ret);                                            \
+    assert(errnum == 0);                                                       \
+    (void)errnum;                                                              \
+  })
+
 namespace web {
 class Mutex : public noncopyable {
 private:
@@ -13,10 +20,10 @@ public:
   Mutex();
   ~Mutex();
 
+  pthread_mutex_t *GetPthreadMutex() { return &mtx_; }
+
   void Lock();
   void Unlock();
-
-  friend class Condition; // 条件变量能够访问互斥锁的私有变量
 };
 
 class LockGuard {

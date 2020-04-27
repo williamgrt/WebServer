@@ -62,10 +62,10 @@ public:
   static const int kDeleted = 2;
 
   // channel事件
-  const int kNoneEvent = 0;
-  const int kReadEvent = POLLIN | POLLPRI;
-  const int kWriteEvent = POLLOUT;
-  const int kErrorEvent = POLLERR;
+  static const int kNoneEvent;
+  static const int kReadEvent;
+  static const int kWriteEvent;
+  static const int kErrorEvent;
 };
 
 } // namespace web
