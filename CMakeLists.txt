@@ -6,18 +6,19 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 add_compile_options(-std=c++14)
+add_compile_options(-g)
 
 set(CXX_FLAGS
     -g
     -Wall
     -std=c++14
-    -D_PTHREADS
+    -D_PTHREADSin
     -Wno-unused-parameter
 )
 
 
 set(CMAKE_CXX_COMPILER "g++")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-O0")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 
 add_subdirectory(src)

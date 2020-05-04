@@ -1,14 +1,25 @@
 #include "Thread.h"
+#include "CurrentThread.h"
 #include <cassert>
 
 using namespace web;
 
+namespace CurrentThread {
+__thread const char *threadName = "default";
+}
+
 void *RunTheadFunc(void *arg) {
   ThreadData *data = static_cast<ThreadData *>(arg);
-  data->threadFunc();
-
+  data->RunThread();
   delete data;
   return nullptr;
+}
+
+void ThreadData::RunThread() {
+  CurrentThread::threadName = name_.empty() ? "GwebThread" : name_.c_str();
+  // 真正运行的函数
+  func_();
+  CurrentThread::threadName = "finished";
 }
 
 std::atomic<int> Thread::numGenerated_(0);
@@ -17,7 +28,7 @@ Thread::Thread(Functor threadFunc, const std::string &name)
     : joined_(false), started_(false), threadFunc_(threadFunc), name_(name) {
   int num = numGenerated_++;
   if (name_.empty()) {
-    name_ = "Thread " + std::to_string(num);
+    name_ = "GWebThread " + std::to_string(num);
   }
 }
 
@@ -47,8 +58,10 @@ void Thread::Start() {
   if (r == 0) {
     // pthread_create成功
   } else {
-    // pthread_create失败，删除动态分配的内存
+    // pthread_create失败
+    // 删除动态分配的内存
     delete data;
+    // 重置运行状态
     started_ = false;
   }
 }

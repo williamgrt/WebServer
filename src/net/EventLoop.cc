@@ -43,15 +43,17 @@ void EventLoop::DeleteChannel(Channel *channel) {
 void EventLoop::Loop() {
   assert(!looping_);
   assert(!quit_);
-
-  // 开始循环
   looping_ = true;
+  quit_ = false;
+
   std::vector<Channel *> activeChannels;
   while (!quit_) {
     activeChannels.clear();
-    int nReady = poller_->Poll(eventCapacity_, -1, activeChannels);
+    poller_->Poll(eventCapacity_, -1, activeChannels);
     for (auto currChannel : activeChannels) {
       currChannel->HandleEvent();
     }
   }
+
+  looping_ = false;
 }

@@ -36,13 +36,17 @@ public:
 };
 
 struct ThreadData {
-  Functor threadFunc;
-  const std::string threadName;
-  pthread_t threadId;
+  Functor func_;
+  const std::string name_;
+  pthread_t tid_;
 
   ThreadData(Functor func, std::string name, pthread_t id)
-      : threadFunc(func), threadName(name), threadId(id) {}
+      : func_(func), name_(name), tid_(id) {}
+
+  void RunThread();
 };
+
+void *RunTheadFunc(void *arg);
 
 } // namespace web
 

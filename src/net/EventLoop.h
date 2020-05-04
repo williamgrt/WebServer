@@ -24,7 +24,6 @@ public:
   void AddChannel(Channel *channel);
   void ModifyChannel(Channel *channel);
   void DeleteChannel(Channel *channel);
-  bool HasChannel(Channel *channel);
 
   void Loop();
 
