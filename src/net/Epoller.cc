@@ -20,13 +20,13 @@ Epoller::~Epoller() {
 
 void Epoller::AddChannel(Channel *channel) {
   assert(channel != nullptr);
-  assert(channel->GetFd() != -1);
+  assert(channel->getFd() != -1);
   assert(channel->GetState() != Channel::kAdded);
 
-  int fd = channel->GetFd();
+  int fd = channel->getFd();
   epoll_event event;
   bzero(&event, sizeof(event));
-  event.events = channel->GetEvents() | EPOLLET; // 采用边缘触发模式
+  event.events = channel->getEvents() | EPOLLET; // 采用边缘触发模式
   event.data.ptr = channel;
 
   int r = ::epoll_ctl(epollFd_, EPOLL_CTL_ADD, fd, &event);
@@ -40,15 +40,15 @@ void Epoller::AddChannel(Channel *channel) {
 
 void Epoller::ModifyChannel(Channel *channel) {
   assert(channel != nullptr);
-  assert(channel->GetFd() != -1);
+  assert(channel->getFd() != -1);
 
-  int fd = channel->GetFd();
+  int fd = channel->getFd();
   assert(fd2Channel_.count(fd) != 0); // 必须是列表里面出现过的channel
   assert(fd2Channel_[fd] == channel);
 
   epoll_event event;
   bzero(&event, sizeof(event));
-  event.events = channel->GetEvents();
+  event.events = channel->getEvents();
   event.data.ptr = channel;
 
   int r = ::epoll_ctl(epollFd_, EPOLL_CTL_MOD, fd, &event);
@@ -59,12 +59,12 @@ void Epoller::ModifyChannel(Channel *channel) {
 
 void Epoller::DeleteChannel(Channel *channel) {
   assert(channel != nullptr);
-  int fd = channel->GetFd();
+  int fd = channel->getFd();
   assert(fd2Channel_.count(fd) != 0 && fd2Channel_[fd] == channel);
 
   epoll_event event;
   bzero(&event, sizeof(event));
-  event.events = channel->GetEvents();
+  event.events = channel->getEvents();
   event.data.ptr = channel;
 
   fd2Channel_.erase(fd); // 从事件集合中删除

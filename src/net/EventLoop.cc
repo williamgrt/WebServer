@@ -23,7 +23,7 @@ EventLoop::~EventLoop() {
 
 void EventLoop::AddChannel(Channel *channel) {
   assert(channel != nullptr);
-  assert(channel->GetLoop() == this);
+  assert(channel->getLoop() == this);
 
   poller_->AddChannel(channel);
 }
@@ -31,7 +31,7 @@ void EventLoop::AddChannel(Channel *channel) {
 void EventLoop::ModifyChannel(Channel *channel) {
   assert(channel != nullptr);
   assert(channel->GetState() == Channel::kAdded);
-  assert(channel->GetLoop() == this);
+  assert(channel->getLoop() == this);
 
   poller_->ModifyChannel(channel);
 }

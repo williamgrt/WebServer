@@ -29,9 +29,9 @@ public:
   Channel(EventLoop *ev);
   ~Channel();
 
-  EventLoop *GetLoop() const { return loop_; }
-  int GetFd() const { return fd_; }
-  uint32_t GetEvents() const { return events_; }
+  EventLoop *getLoop() const { return loop_; }
+  int getFd() const { return fd_; }
+  uint32_t getEvents() const { return events_; }
   uint32_t GetRevents() const { return revents_; }
   int GetState() const { return state_; }
 
