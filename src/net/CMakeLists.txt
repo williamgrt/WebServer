@@ -1,5 +1,5 @@
 set(NET_LIB
-Channel.cc EventLoop.cc Epoller.cc)
+Channel.cc EventLoop.cc EPoller.cc)
 
 add_library(lib_net ${NET_LIB})
 

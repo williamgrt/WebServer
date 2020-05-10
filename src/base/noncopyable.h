@@ -1,5 +1,5 @@
-#ifndef _NONCOPYABLE_H
-#define _NONCOPYABLE_H
+#ifndef WEBSERVER_SRC_BASE_NONCOPYABLE_H
+#define WEBSERVER_SRC_BASE_NONCOPYABLE_H
 
 namespace web {
 // 不可复制的类
@@ -13,4 +13,4 @@ public:
 };
 } // namespace web
 
-#endif // _NONCOPYABLE_H
+#endif // WEBSERVER_SRC_BASE_NONCOPYABLE_H

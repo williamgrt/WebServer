@@ -1,4 +1,4 @@
-#include "Epoller.h"
+#include "EPoller.h"
 #include "Channel.h"
 #include "EventLoop.h"
 #include "Utils.h"
@@ -6,24 +6,24 @@
 
 using namespace web;
 
-Epoller::Epoller() {
+EPoller::EPoller() {
   epollFd_ = ::epoll_create1(EPOLL_CLOEXEC);
   assert(epollFd_ > 0);
 }
 
-Epoller::~Epoller() {
+EPoller::~EPoller() {
   if (epollFd_ != -1) {
     // epoll 没有被关闭
     ::close(epollFd_);
   }
 }
 
-void Epoller::AddChannel(Channel *channel) {
+void EPoller::addChannel(Channel *channel) {
   assert(channel != nullptr);
-  assert(channel->getFd() != -1);
-  assert(channel->GetState() != Channel::kAdded);
+  assert(channel->fd() != -1);
+  assert(channel->getState() != Channel::kAdded);
 
-  int fd = channel->getFd();
+  int fd = channel->fd();
   epoll_event event;
   bzero(&event, sizeof(event));
   event.events = channel->getEvents() | EPOLLET; // 采用边缘触发模式
@@ -35,14 +35,14 @@ void Epoller::AddChannel(Channel *channel) {
   }
 
   fd2Channel_[fd] = channel;
-  channel->SetState(Channel::kAdded);
+  channel->setState(Channel::kAdded);
 }
 
-void Epoller::ModifyChannel(Channel *channel) {
+void EPoller::modifyChannel(Channel *channel) {
   assert(channel != nullptr);
-  assert(channel->getFd() != -1);
+  assert(channel->fd() != -1);
 
-  int fd = channel->getFd();
+  int fd = channel->fd();
   assert(fd2Channel_.count(fd) != 0); // 必须是列表里面出现过的channel
   assert(fd2Channel_[fd] == channel);
 
@@ -57,9 +57,9 @@ void Epoller::ModifyChannel(Channel *channel) {
   }
 }
 
-void Epoller::DeleteChannel(Channel *channel) {
+void EPoller::deleteChannel(Channel *channel) {
   assert(channel != nullptr);
-  int fd = channel->getFd();
+  int fd = channel->fd();
   assert(fd2Channel_.count(fd) != 0 && fd2Channel_[fd] == channel);
 
   epoll_event event;
@@ -69,16 +69,16 @@ void Epoller::DeleteChannel(Channel *channel) {
 
   fd2Channel_.erase(fd); // 从事件集合中删除
   // 如果在监听的事件集中，删除这个事件
-  if (channel->GetState() == Channel::kAdded) {
+  if (channel->getState() == Channel::kAdded) {
     int r = ::epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, &event);
     if (r == -1) {
       perror("epoll delete error.");
     }
   }
-  channel->SetState(Channel::kDeleted);
+  channel->setState(Channel::kDeleted);
 }
 
-int Epoller::Poll(int maxEvent, int waitMs,
+int EPoller::poll(int maxEvent, int waitMs,
                   std::vector<Channel *> &activeChannels) {
   // 确保epoll已经初始化
   assert(epollFd_ != -1);
@@ -97,7 +97,7 @@ int Epoller::Poll(int maxEvent, int waitMs,
     for (int i = 0; i < nReady; ++i) {
       Channel *currChannel = static_cast<Channel *>(events_[i].data.ptr);
       short revents = events_[i].events;
-      currChannel->SetRevents(revents);
+      currChannel->setRevents(revents);
       activeChannels.push_back(currChannel);
     }
   }

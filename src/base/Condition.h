@@ -1,5 +1,5 @@
-#ifndef _CONDITION_H
-#define _CONDITION_H
+#ifndef WEBSERVER_SRC_BASE_CONDITION_H
+#define WEBSERVER_SRC_BASE_CONDITION_H
 
 #include "noncopyable.h"
 #include <functional>
@@ -13,14 +13,14 @@ private:
   pthread_cond_t cond_;
 
 public:
-  Condition(Mutex &mtx);
+  explicit Condition(Mutex &mtx);
   ~Condition();
 
-  void Wait();
-  void WaitIf(std::function<bool()> cond);
-  void Notify();
-  void NotifyAll();
+  void wait();
+  void waitIf(const std::function<bool()> &cond);
+  void notify();
+  void notifyAll();
 };
 } // namespace web
 
-#endif // _CONDITION_H
+#endif // WEBSERVER_SRC_BASE_CONDITION_H

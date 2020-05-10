@@ -1,11 +1,15 @@
-#ifndef _CURRENTTHREAD_H
-#define _CURRENTTHREAD_H
+#ifndef WEBSERVER_SRC_BASE_CURRENTTHREAD_H
+#define WEBSERVER_SRC_BASE_CURRENTTHREAD_H
 
 namespace web {
 namespace CurrentThread {
 extern __thread const char *threadName;
+
+inline const char *getName() {
+  return threadName;
+}
 } // namespace CurrentThread
 
 } // namespace web
 
-#endif // _CURRENTTHREAD_H
+#endif // WEBSERVER_SRC_BASE_CURRENTTHREAD_H

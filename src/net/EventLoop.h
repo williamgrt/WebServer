@@ -7,7 +7,7 @@
 
 namespace web {
 class Channel;
-class Epoller;
+class EPoller;
 
 // 单线程版本的EventLoop
 class EventLoop {
@@ -15,20 +15,20 @@ private:
   bool looping_;
   bool quit_;
   int eventCapacity_;
-  std::unique_ptr<Epoller> poller_;
+  std::unique_ptr<EPoller> poller_;
 
 public:
   EventLoop();
   ~EventLoop();
 
-  void AddChannel(Channel *channel);
-  void ModifyChannel(Channel *channel);
-  void DeleteChannel(Channel *channel);
+  void addChannel(Channel *channel);
+  void modifyChannel(Channel *channel);
+  void deleteChannel(Channel *channel);
 
-  void Loop();
+  // EventLoop运行函数
+  void loop();
 
-  void AssertInLoopThread();
-  bool LoopInThread();
+  void assertInLoopThread();
 };
 
 } // namespace web

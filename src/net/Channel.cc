@@ -1,14 +1,20 @@
 #include "Channel.h"
 #include "EventLoop.h"
 #include "Utils.h"
-#include <sys/epoll.h>
+#include <poll.h>
 
 using namespace web;
 
-const int Channel::kNoneEvent = 0;
-const int Channel::kReadEvent = POLLIN | POLLPRI;
-const int Channel::kWriteEvent = POLLOUT;
-const int Channel::kErrorEvent = POLLERR;
+// 表示一个channel的状态
+const int Channel::kNew = -1; // 新建
+const int Channel::kAdded = 1; // 添加到loop中
+const int Channel::kDeleted = 2; // 从loop中删除
+
+// 表示注册在channel上的事件类型
+const int Channel::kNoneEvent = 0; // 没有事件
+const int Channel::kReadEvent = POLLIN | POLLPRI; // 可读事件
+const int Channel::kWriteEvent = POLLOUT; // 可写事件
+const int Channel::kErrorEvent = POLLERR; // 错误事件
 
 Channel::Channel(EventLoop *loop, int fd)
     : loop_(loop), fd_(fd), events_(kNoneEvent), revents_(kNoneEvent),
@@ -19,7 +25,7 @@ Channel::~Channel() {
   fd_ = -1;
 }
 
-void Channel::SetState(int state) {
+void Channel::setState(int state) {
   assert(state == kNew || state == kAdded || state == kDeleted);
   state_ = state;
 }
@@ -32,7 +38,7 @@ void Channel::SetRead(bool label) {
   }
 
   if (state_ == kAdded) {
-    loop_->ModifyChannel(this);
+    loop_->modifyChannel(this);
   }
 }
 
@@ -44,7 +50,7 @@ void Channel::SetWrite(bool label) {
   }
 
   if (state_ == kAdded) {
-    loop_->ModifyChannel(this);
+    loop_->modifyChannel(this);
   }
 }
 
@@ -56,37 +62,37 @@ void Channel::SetError(bool label) {
   }
 
   if (state_ == kAdded) {
-    loop_->ModifyChannel(this);
+    loop_->modifyChannel(this);
   }
 }
 
-void Channel::HandleRead() {
+void Channel::handleRead() {
   if (readCb_) {
     readCb_();
   }
 }
 
-void Channel::HandleWrite() {
+void Channel::handleWrite() {
   if (writeCb_) {
     writeCb_();
   }
 }
 
-void Channel::HandleError() {
+void Channel::handleError() {
   if (errorCb_) {
     errorCb_();
   }
 }
 
-// 根据接受事件执行不同的回调函数
-void Channel::HandleEvent() {
+// 根据接受事件类型执行不同的回调函数
+void Channel::handleEvent() {
   if (revents_ & kReadEvent) {
-    HandleRead();
+    handleRead();
   }
   if (revents_ & kWriteEvent) {
-    HandleWrite();
+    handleWrite();
   }
   if (revents_ & kErrorEvent) {
-    HandleError();
+    handleError();
   }
 }

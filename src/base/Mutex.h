@@ -1,5 +1,5 @@
-#ifndef _MUTEX_H
-#define _MUTEX_H
+#ifndef WEBSERVER_SRC_BASE_MUTEX_H
+#define WEBSERVER_SRC_BASE_MUTEX_H
 
 #include "noncopyable.h"
 #include <pthread.h>
@@ -14,16 +14,16 @@
 namespace web {
 class Mutex : public noncopyable {
 private:
-  pthread_mutex_t mtx_;
+  pthread_mutex_t mutex_;
 
 public:
   Mutex();
   ~Mutex();
 
-  pthread_mutex_t *GetPthreadMutex() { return &mtx_; }
+  pthread_mutex_t *getPthreadMutex() { return &mutex_; }
 
-  void Lock();
-  void Unlock();
+  void lock();
+  void unlock();
 };
 
 class LockGuard {
@@ -31,10 +31,10 @@ private:
   Mutex &mutex_;
 
 public:
-  LockGuard(Mutex &mutex) : mutex_(mutex) { mutex.Lock(); }
-  ~LockGuard() { mutex_.Unlock(); }
+  LockGuard(Mutex &mutex) : mutex_(mutex) { mutex.lock(); }
+  ~LockGuard() { mutex_.unlock(); }
 };
 
 } // namespace web
 
-#endif // _MUTEX_H
+#endif // WEBSERVER_SRC_BASE_MUTEX_H

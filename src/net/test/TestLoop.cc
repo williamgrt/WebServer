@@ -30,8 +30,8 @@ int main() {
   auto channel = make_shared<Channel>(&loop, timer);
   channel->SetRead(true);
   channel->SetReadCallBack(timeout);
-  loop.AddChannel(channel.get());
-  cout << "Start looping\n";
+  loop.addChannel(channel.get());
+  cout << "start looping\n";
 
-  loop.Loop();
+  loop.loop();
 }
