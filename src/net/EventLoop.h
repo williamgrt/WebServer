@@ -1,5 +1,5 @@
-#ifndef _EVENTLOOP_H
-#define _EVENTLOOP_H
+#ifndef WEBSERVER_SRC_NET_EVENTLOOP_H
+#define WEBSERVER_SRC_NET_EVENTLOOP_H
 
 #include <memory>
 #include <thread>
@@ -27,10 +27,12 @@ public:
 
   // EventLoop运行函数
   void loop();
+  void close();
 
   void assertInLoopThread();
+  bool isInLoopThread();
 };
 
 } // namespace web
 
-#endif // _EVENTLOOP_H
+#endif // WEBSERVER_SRC_NET_EVENTLOOP_H

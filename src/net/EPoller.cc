@@ -7,14 +7,14 @@
 using namespace web;
 
 EPoller::EPoller() {
-  epollFd_ = ::epoll_create1(EPOLL_CLOEXEC);
-  assert(epollFd_ > 0);
+  epollfd_ = ::epoll_create1(EPOLL_CLOEXEC);
+  assert(epollfd_ > 0);
 }
 
 EPoller::~EPoller() {
-  if (epollFd_ != -1) {
+  if (epollfd_ != -1) {
     // epoll 没有被关闭
-    ::close(epollFd_);
+    ::close(epollfd_);
   }
 }
 
@@ -29,7 +29,7 @@ void EPoller::addChannel(Channel *channel) {
   event.events = channel->getEvents() | EPOLLET; // 采用边缘触发模式
   event.data.ptr = channel;
 
-  int r = ::epoll_ctl(epollFd_, EPOLL_CTL_ADD, fd, &event);
+  int r = ::epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &event);
   if (r == -1) {
     error(1, errno, "epoll add error.");
   }
@@ -51,7 +51,7 @@ void EPoller::modifyChannel(Channel *channel) {
   event.events = channel->getEvents();
   event.data.ptr = channel;
 
-  int r = ::epoll_ctl(epollFd_, EPOLL_CTL_MOD, fd, &event);
+  int r = ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &event);
   if (r == -1) {
     perror("epoll modify error.");
   }
@@ -70,7 +70,7 @@ void EPoller::deleteChannel(Channel *channel) {
   fd2Channel_.erase(fd); // 从事件集合中删除
   // 如果在监听的事件集中，删除这个事件
   if (channel->getState() == Channel::kAdded) {
-    int r = ::epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, &event);
+    int r = ::epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &event);
     if (r == -1) {
       perror("epoll delete error.");
     }
@@ -81,14 +81,14 @@ void EPoller::deleteChannel(Channel *channel) {
 int EPoller::poll(int maxEvent, int waitMs,
                   std::vector<Channel *> &activeChannels) {
   // 确保epoll已经初始化
-  assert(epollFd_ != -1);
+  assert(epollfd_ != -1);
   assert(maxEvent > 0);
   assert(waitMs >= -1);
 
   // 将events_的容量修改到最大的事件数
   events_.resize(maxEvent);
   // 开始监听
-  int nReady = ::epoll_wait(epollFd_, &*events_.begin(), maxEvent, waitMs);
+  int nReady = ::epoll_wait(epollfd_, &*events_.begin(), maxEvent, waitMs);
   if (nReady < 0) {
     perror("epoll wait error.");
   } else if (nReady == 0) {

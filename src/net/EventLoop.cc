@@ -5,20 +5,20 @@
 #include <algorithm>
 
 using namespace web;
+using namespace std;
 
-__thread web::EventLoop *_loopInThisThread = nullptr; // 当前线程的eventloop
-const int MAXEVENT = 1024;
+thread_local web::EventLoop *loopInThisThread = nullptr; // 当前线程的eventloop
+const int MAX_EVENT_NUM = 1024;
 
 EventLoop::EventLoop()
-    : poller_(new EPoller()), looping_(false), quit_(false),
-      eventCapacity_(MAXEVENT) {
-  assert(_loopInThisThread == nullptr);
-  _loopInThisThread = this;
+    : looping_(false), quit_(false), eventCapacity_(MAX_EVENT_NUM), poller_(new EPoller()) {
+  assert(loopInThisThread == nullptr);
+  loopInThisThread = this;
 }
 
 EventLoop::~EventLoop() {
   looping_ = false;
-  _loopInThisThread = nullptr;
+  loopInThisThread = nullptr;
 }
 
 void EventLoop::addChannel(Channel *channel) {
@@ -26,6 +26,10 @@ void EventLoop::addChannel(Channel *channel) {
   assert(channel->getLoop() == this);
 
   poller_->addChannel(channel);
+}
+
+void EventLoop::assertInLoopThread() {
+  assert(loopInThisThread == this);
 }
 
 void EventLoop::modifyChannel(Channel *channel) {
@@ -57,3 +61,12 @@ void EventLoop::loop() {
 
   looping_ = false;
 }
+
+void EventLoop::close() {
+  quit_ = true;
+}
+
+bool EventLoop::isInLoopThread() {
+  return loopInThisThread == this;
+}
+

@@ -1,4 +1,5 @@
 // 测试EventLoop程序功能
+// 参考陈硕muduo的测试代码
 
 #include "../Channel.h"
 #include "../EventLoop.h"
@@ -14,7 +15,7 @@ EventLoop *currLoop;
 
 void timeout() {
   cout << "Time Out\n";
-  exit(0);
+  currLoop->close();
 }
 
 int main() {

@@ -48,7 +48,7 @@ void ThreadPool::start() {
  * 线程池内每个线程运行的函数
  */
 void ThreadPool::runInThread() {
-  // 保证线程池在运行过程中
+  // 保证线程池处于运行状态
   while (running_) {
     LockGuard guard(mutex_);
     //empty_.waitIf(std::bind(&ThreadPool::isEmpty, this));
