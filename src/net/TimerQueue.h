@@ -18,9 +18,9 @@ class Channel;
 class TimerQueue : noncopyable {
 public:
   explicit TimerQueue(EventLoop *loop);
-  ~TimerQueue() {}
+  ~TimerQueue();
 
-  TimerId addTimer(Timer::TimeType now, Timer::TimerCallBack callBack, Timer::TimeType interval);
+  TimerId addTimer(Timer::TimeType now, Timer::TimerCallBack cb, Timer::TimeType interval);
   void cancel(TimerId timerId);
 
 private:
@@ -28,7 +28,7 @@ private:
   using Entry = std::pair<Timer::TimeType, TimerPtr>;
   using TimerList = std::priority_queue<Entry>;
 
-  // 处理
+  // 处理timerfd的到期事件
   void handleRead();
 
   EventLoop *loop_;

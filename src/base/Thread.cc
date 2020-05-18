@@ -1,12 +1,15 @@
 #include "Thread.h"
 #include "CurrentThread.h"
 #include <cassert>
+#include <syscall.h>
+#include <unistd.h>
+#include <sys/prctl.h>
 
 using namespace web;
 
 namespace web {
 namespace CurrentThread {
-__thread const char *threadName = "default";
+thread_local const char *threadName = "default";
 }
 }
 
@@ -19,8 +22,9 @@ void *runThreadFunc(void *arg) {
 
 void ThreadData::runThread() {
   // 设置运行函数的名字
-  web::CurrentThread::threadName = name_.empty() ? "GnetThread" : name_.c_str();
-  // 真正运行的函数
+  CurrentThread::threadName = name_.empty() ? "GnetThread" : name_.c_str();
+  prctl(PR_SET_NAME, CurrentThread::threadName);
+  // 运行函数
   func_();
   // 把当前线程的名字改为finished
   web::CurrentThread::threadName = "finished";
@@ -71,4 +75,8 @@ void Thread::start() {
     // 重置运行状态
     started_ = false;
   }
+}
+
+pid_t Thread::gettid() {
+  return syscall(SYS_gettid);
 }

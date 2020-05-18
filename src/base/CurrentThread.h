@@ -3,7 +3,7 @@
 
 namespace web {
 namespace CurrentThread {
-extern __thread const char *threadName;
+extern thread_local const char *threadName;
 
 inline const char *getName() {
   return threadName;

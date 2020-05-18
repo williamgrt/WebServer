@@ -15,7 +15,7 @@ EventLoop *currLoop;
 
 void timeout() {
   cout << "Time Out\n";
-  currLoop->close();
+  currLoop->quit();
 }
 
 int main() {
@@ -29,9 +29,8 @@ int main() {
   ::timerfd_settime(timer, 0, &howlong, NULL);
 
   auto channel = make_shared<Channel>(&loop, timer);
-  channel->SetRead(true);
-  channel->SetReadCallBack(timeout);
-  loop.addChannel(channel.get());
+  channel->enableRead();
+  channel->setReadCallBack(timeout);
   cout << "start looping\n";
 
   loop.loop();

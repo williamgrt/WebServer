@@ -11,15 +11,14 @@ class EventLoop;
 class EPoller;
 
 class Channel {
- public:
+public:
   Channel(EventLoop *ev, int fd);
-  Channel(EventLoop *ev);
   ~Channel();
 
   EventLoop *getLoop() const { return loop_; }
   int fd() const { return fd_; }
-  uint32_t getEvents() const { return events_; }
-  uint32_t getRevents() const { return revents_; }
+  int32_t getEvents() const { return events_; }
+  int32_t getRevents() const { return revents_; }
   int getState() const { return state_; }
 
   void setFd(int fd) { fd_ = fd; }
@@ -30,13 +29,14 @@ class Channel {
   void setReadCallBack(CallBack &read) { readCb_ = read; }
   void setWriteCallBack(CallBack &write) { writeCb_ = write; }
   void setErrorCallBack(CallBack &error) { errorCb_ = error; }
-  void SetReadCallBack(CallBack &&read) { readCb_ = std::move(read); }
-  void SetWriteCallBack(CallBack &&write) { writeCb_ = std::move(write); }
-  void SetErrorCallBack(CallBack &&error) { errorCb_ = std::move(error); }
+  void setReadCallBack(CallBack &&read) { readCb_ = std::move(read); }
+  void setWriteCallBack(CallBack &&write) { writeCb_ = std::move(write); }
+  void setErrorCallBack(CallBack &&error) { errorCb_ = std::move(error); }
 
-  void SetRead(bool label);
-  void SetWrite(bool label);
-  void SetError(bool label);
+  void setRead(bool label);
+  void setWrite(bool label);
+  void setError(bool label);
+  void enableRead() { setRead(true); }
 
   void handleRead();
   void handleWrite();
@@ -54,11 +54,14 @@ class Channel {
   static const int kWriteEvent;
   static const int kErrorEvent;
 
- private:
+private:
+  // 更新channel的状态
+  void update();
+
   EventLoop *loop_;
   int fd_;
-  uint32_t events_;
-  uint32_t revents_; // recieve events from poller.
+  int32_t events_;
+  int32_t revents_; // recieve events from poller.
   int state_;
 
   // 回调函数

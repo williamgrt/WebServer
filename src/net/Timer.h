@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <functional>
 #include <atomic>
+#include <memory>
 
 namespace web {
 
@@ -27,6 +28,7 @@ public:
   TimeType invalid() const { return 0; }
 
   void restart();
+  void remove();
 
   static TimeType now();
   static uint64_t getCreateNum();
@@ -37,7 +39,6 @@ private:
   TimerCallBack cb_; // 超时回调函数
   bool repeated_; // 是否重复计时
   const uint64_t sequence_; // 序列号
-  bool delete_; // 定时器是否被删除
 
   // 统计生成了多少个Timer
   static std::atomic<uint64_t> numCreated_;
@@ -46,15 +47,16 @@ private:
 // 封装了Timer，暴露给客户端使用
 class TimerId {
 public:
-  TimerId() : TimerId(nullptr, 0) {}
+  TimerId() : sequence_(0) {}
 
-  TimerId(Timer *timer, const int sequence) : timer_(timer), sequence_(sequence) {}
+  TimerId(const std::weak_ptr<Timer> &timer)
+      : timer_(timer), sequence_(timer.lock() ? timer.lock()->getSequence() : 0) {}
 
   // 定时器队列可以使用私有成员变量
   friend class TimerQueue;
 private:
-  Timer *timer_;
-  const int sequence_;
+  std::weak_ptr<Timer> timer_;
+  const uint64_t sequence_;
 
 };
 

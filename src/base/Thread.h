@@ -22,6 +22,8 @@ class Thread : public noncopyable {
   void start();
   void join();
 
+  static pid_t gettid();
+
  private:
   // 线程状态
   bool joined_;
@@ -29,8 +31,9 @@ class Thread : public noncopyable {
 
   // 线程私有成员
   pthread_t threadId_;
-  Functor threadFunc_;
-  std::string name_;
+  Functor threadFunc_; // 线程调用函数
+  std::string name_; // 线程名称
+  pid_t tid_; // 线程ID
 
   // 线程计数器
   static std::atomic<int> numGenerated_;

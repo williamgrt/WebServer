@@ -38,3 +38,8 @@ void Timer::restart() {
     expiration_ = 0;
   }
 }
+
+void Timer::remove() {
+  // 直接将定时器的超时时间设置为0，表示删除了这个定时器
+  expiration_ = 0;
+}

@@ -3,18 +3,21 @@
 
 #include "Socket.h"
 #include <string>
+#include <memory>
 
 namespace web {
+class EventLoop;
+class Channel;
 
 class Acceptor {
 public:
-
   Acceptor(const std::string &hostname, unsigned short port);
   ~Acceptor();
 
 private:
   Socket socket_;
   Ip4Addr addr_;
+  std::unique_ptr<Channel> socketChannel_;
 
 };
 

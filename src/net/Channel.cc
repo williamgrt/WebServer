@@ -22,6 +22,8 @@ Channel::Channel(EventLoop *loop, int fd)
 
 Channel::~Channel() {
   events_ = 0;
+  // 不要关闭文件描述符
+  // 文件描述符的关闭由持有该结构的类实现
   fd_ = -1;
 }
 
@@ -30,40 +32,19 @@ void Channel::setState(int state) {
   state_ = state;
 }
 
-void Channel::SetRead(bool label) {
-  if (label) {
-    events_ |= kReadEvent;
-  } else {
-    events_ &= ~kReadEvent;
-  }
-
-  if (state_ == kAdded) {
-    loop_->modifyChannel(this);
-  }
+void Channel::setRead(bool label) {
+  label ? events_ |= kReadEvent : events_ &= kReadEvent;
+  update();
 }
 
-void Channel::SetWrite(bool label) {
-  if (label) {
-    events_ |= kWriteEvent;
-  } else {
-    events_ &= ~kWriteEvent;
-  }
-
-  if (state_ == kAdded) {
-    loop_->modifyChannel(this);
-  }
+void Channel::setWrite(bool label) {
+  label ? events_ |= kWriteEvent : events_ &= ~kWriteEvent;
+  update();
 }
 
-void Channel::SetError(bool label) {
-  if (label) {
-    events_ |= kErrorEvent;
-  } else {
-    events_ &= ~kErrorEvent;
-  }
-
-  if (state_ == kAdded) {
-    loop_->modifyChannel(this);
-  }
+void Channel::setError(bool label) {
+  label ? events_ |= kErrorEvent : events_ &= ~kErrorEvent;
+  update();
 }
 
 void Channel::handleRead() {
@@ -86,13 +67,26 @@ void Channel::handleError() {
 
 // 根据接受事件类型执行不同的回调函数
 void Channel::handleEvent() {
+  // 可读事件
   if (revents_ & kReadEvent) {
     handleRead();
   }
+
+  // 可写事件
   if (revents_ & kWriteEvent) {
     handleWrite();
   }
+
+  // 错误事件
   if (revents_ & kErrorEvent) {
     handleError();
+  }
+}
+
+void Channel::update() {
+  if (state_ == kAdded) {
+    loop_->modifyChannel(this);
+  } else {
+    loop_->addChannel(this);
   }
 }
