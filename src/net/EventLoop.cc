@@ -12,7 +12,10 @@ using namespace std;
 thread_local web::EventLoop *loopInThisThread = nullptr; // 当前线程的eventloop
 const int MAX_EVENT_NUM = 1024;
 
-// 创建一个eventfd
+/*
+ * 创建一个 eventfd
+ * eventfd 用于唤醒 EventLoop，执行在 I/O 线程中的操作
+ */
 int createEventFd() {
   int evfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
   if (evfd < 0) {
@@ -24,8 +27,15 @@ int createEventFd() {
 }
 
 EventLoop::EventLoop()
-    : looping_(false), quit_(false), eventCapacity_(MAX_EVENT_NUM), poller_(make_unique<EPoller>()),
-      ownerId_(Thread::gettid()), wakeupFd_(createEventFd()), wakeupChannel_(make_unique<Channel>(this, wakeupFd_)) {
+    : looping_(false),
+      quit_(false),
+      eventCapacity_(MAX_EVENT_NUM),
+      poller_(make_unique<EPoller>()),
+      ownerId_(Thread::gettid()),
+      wakeupFd_(createEventFd()),
+      wakeupChannel_(make_unique<Channel>(this, wakeupFd_)),
+      callingPendingFunctors_(false),
+      timerQueue_(make_unique<TimerQueue>(this)) {
   assert(loopInThisThread == nullptr);
   loopInThisThread = this;
   wakeupChannel_->setReadCallBack(std::bind(&EventLoop::handleWakeup, this));
@@ -97,6 +107,7 @@ void EventLoop::runInLoop(const Functor &cb) {
     cb();
   } else {
     // 在其他线程调用
+    // 需要把任务添加到 EventLoop 的任务队列中，然后
     queueInLoop(cb);
   }
 }
@@ -148,4 +159,19 @@ void EventLoop::handleWakeup() {
   if (r != sizeof(one)) {
     // TODO: Add code for log output
   }
+}
+
+TimerId EventLoop::runAfter(double delay, const Functor &cb) {
+  Timer::TimeType when = Timer::now() + static_cast<Timer::TimeType>(delay * Timer::kMsPerSec);
+  return timerQueue_->addTimer(when, cb, 0);
+}
+
+TimerId EventLoop::runEvery(double interval, const Functor &cb) {
+  assert(interval > 0);
+  Timer::TimeType when = Timer::now() + static_cast<Timer::TimeType>(interval * Timer::kMsPerSec);
+  return timerQueue_->addTimer(when, cb, static_cast<Timer::TimeType>(interval * Timer::kMsPerSec));
+}
+
+void EventLoop::cancel(TimerId timerId) {
+  timerQueue_->cancel(timerId);
 }

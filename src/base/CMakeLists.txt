@@ -3,10 +3,10 @@ set(BASE_LIB
     Thread.cc
     Mutex.cc
     Condition.cc
-    ThreadPool.cc
-    )
+    ThreadPool.cc)
 
-add_library(libbase ${BASE_LIB})
-target_link_libraries(libbase pthread rt)
+add_definitions(-std=c++11)
+add_library(Gweb_base ${BASE_LIB})
+target_link_libraries(Gweb_base pthread rt)
 
 add_subdirectory(test)

@@ -7,13 +7,18 @@
 
 #include "../base/noncopyable.h"
 #include "Timer.h"
+#include "../base/Mutex.h"
+
 #include <memory>
 #include <queue>
 #include <vector>
+#include <set>
+
 
 namespace web {
 class EventLoop;
 class Channel;
+class Mutex;
 
 class TimerQueue : noncopyable {
 public:
@@ -21,20 +26,29 @@ public:
   ~TimerQueue();
 
   TimerId addTimer(Timer::TimeType now, Timer::TimerCallBack cb, Timer::TimeType interval);
+
   void cancel(TimerId timerId);
 
 private:
   using TimerPtr = std::shared_ptr<Timer>;
   using Entry = std::pair<Timer::TimeType, TimerPtr>;
-  using TimerList = std::priority_queue<Entry>;
+  using TimerList = std::set<Entry>;
 
-  // 处理timerfd的到期事件
   void handleRead();
+  std::vector<Entry> getExpiredTimer(Timer::TimeType now);
+  // 插入新的计时器
+  bool addTimer(const TimerPtr &timer);
+  void reset(std::vector<Entry> &expired);
 
   EventLoop *loop_;
   const int timerfd_;
   std::unique_ptr<Channel> timerfdChannel_;
-  std::vector<TimerPtr> allTimers_;
+
+  Mutex mutex_; // 保护定时器队列
+  TimerList timers_; // 所有的定时器
+
+  std::vector<Timer> activeTimers_;
+
 };
 
 } // namespace web

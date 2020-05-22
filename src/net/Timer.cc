@@ -1,5 +1,6 @@
 #include "Timer.h"
 #include <time.h>
+#include <sys/time.h>
 
 using namespace web;
 using namespace std;
@@ -17,11 +18,9 @@ Timer::Timer(TimeType now, const TimerCallBack &cb, TimeType interval = 0) : exp
  * 获取当前时间
  */
 Timer::TimeType Timer::now() {
-  timespec ts = timespec();
-  clock_gettime(CLOCK_REALTIME, &ts);
-  // 目前定时器仅支持秒级定时
-  // 未来可能会添加毫秒级定时的支持
-  return ts.tv_sec;
+  timeval tv{};
+  ::gettimeofday(&tv, nullptr);
+  return tv.tv_sec * kMsPerSec + tv.tv_usec;
 }
 
 uint64_t Timer::getCreateNum() {

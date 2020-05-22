@@ -31,7 +31,7 @@ void EPoller::addChannel(Channel *channel) {
 
   int r = ::epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &event);
   if (r == -1) {
-    error(1, errno, "epoll add error.");
+    error(1, errno, "epoll addTimer error.");
   }
 
   fd2Channel_[fd] = channel;

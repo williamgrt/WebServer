@@ -4,7 +4,9 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include "Timer.h"
 #include "../base/Mutex.h"
+#include "TimerQueue.h"
 
 namespace web {
 class Channel;
@@ -35,19 +37,26 @@ public:
   void assertInLoopThread() const;
   bool isInLoopThread() const;
 
+  /* ------------------ 定时器操作相关的函数 ------------------ */
+  TimerId runAfter(double delay, const Functor &cb);
+  TimerId runEvery(double expiration, const Functor &cb);
+  void cancel(TimerId timerId);
+
 private:
   bool looping_;
   bool quit_;
   int eventCapacity_;
-  std::unique_ptr<EPoller> poller_;
+  std::unique_ptr<EPoller> poller_; // 执行 epoll 操作多路复用器
   pid_t ownerId_; // EventLoop 所处的线程
 
-  Mutex mutex_;
-  std::vector<Functor> pendingFunctors_;
+  Mutex mutex_; // 保护任务队列
+  std::vector<Functor> pendingFunctors_; // 任务队列
 
   int wakeupFd_;
   std::unique_ptr<Channel> wakeupChannel_;
   bool callingPendingFunctors_;
+
+  std::unique_ptr<TimerQueue> timerQueue_;
 
   void wakeup();
   void doPendingFunctors();

@@ -33,7 +33,10 @@ void ThreadData::runThread() {
 std::atomic<int> Thread::numGenerated_(0); // 初始化程序计数器
 
 Thread::Thread(Functor threadFunc, const std::string &name)
-    : joined_(false), started_(false), threadFunc_(std::move(threadFunc)), name_(std::move(name)) {
+    : joined_(false),
+    started_(false),
+    threadFunc_(std::move(threadFunc)),
+    name_(std::move(name)) {
   int num = numGenerated_++;
   if (name_.empty()) {
     name_ = "GWebThread " + std::to_string(num);

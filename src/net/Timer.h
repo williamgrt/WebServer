@@ -13,7 +13,7 @@ namespace web {
 class Timer : noncopyable {
 public:
   using TimerCallBack = std::function<void()>;
-  using TimeType = time_t;
+  using TimeType = int64_t ;
 
   Timer(TimeType now, const TimerCallBack &cb, TimeType interval);
   ~Timer() = default;
@@ -30,6 +30,7 @@ public:
   void restart();
   void remove();
 
+  const static int kMsPerSec = 1000 * 1000;
   static TimeType now();
   static uint64_t getCreateNum();
 
@@ -56,8 +57,7 @@ public:
   friend class TimerQueue;
 private:
   std::weak_ptr<Timer> timer_;
-  const uint64_t sequence_;
-
+  uint64_t sequence_;
 };
 
 } // namespace web
