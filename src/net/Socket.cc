@@ -34,10 +34,17 @@ Socket::Socket() {
     error(1, errno, "create socket error.");
     abort();
   }
+  closed_ = false;
+}
+
+Socket::Socket(int sockfd) : sockfd_(sockfd) {
+  closed_ = false;
 }
 
 Socket::~Socket() {
-  ::close(sockfd_);
+  if (!closed_) {
+    closeOpt();
+  }
 }
 
 void Socket::bind(Ip4Addr &sockAddr) {
@@ -50,8 +57,13 @@ void Socket::listen(int backlog) {
   listenOpt(backlog);
 }
 
-int Socket::accept() {
-  return acceptOpt();
+void Socket::close() {
+  assert(!closed_);
+  closeOpt();
+}
+
+int Socket::accept(Ip4Addr &peer) {
+  return acceptOpt(peer);
 }
 
 void Socket::setNoDelay() {
@@ -77,12 +89,6 @@ void Socket::setKeepAlive() {
 void Socket::bindOpt(Ip4Addr &sockAddr) {
   auto addr = sockAddr.getAddr();
 
-  // 设置socket选项
-  setNoDelay();
-  setNonBlocking();
-  setKeepAlive();
-  setReuseAddr();
-
   sockfd_ = ::bind(sockfd_, (sockaddr *) &addr, sizeof(addr));
   if (sockfd_ == -1) {
     error(1, errno, "socket bind error.");
@@ -90,23 +96,28 @@ void Socket::bindOpt(Ip4Addr &sockAddr) {
   }
 }
 
-int Socket::acceptOpt() {
-  Ip4Addr clientAddr;
-  auto addr = clientAddr.getAddr();
-  socklen_t addrLen = 0;
-  int connfd = ::accept(sockfd_, (sockaddr *) &addr, &addrLen);
-  if (connfd == -1) {
-    error(1, errno, "accept error.");
-    abort();
-  }
-
-  return connfd;
-}
-
 void Socket::listenOpt(int backlog) {
-  sockfd_ = ::listen(sockfd_, backlog);
-  if (sockfd_ == -1) {
+  int r = ::listen(sockfd_, backlog);
+  if (r == -1) {
     error(1, errno, "socket listen error.");
     abort();
   }
+}
+
+void Socket::closeOpt() {
+  int r = ::close(sockfd_);
+  if (r == -1) {
+    error(1, errno, "socket close error.\n");
+  }
+}
+
+int Socket::acceptOpt(Ip4Addr &peer) {
+  sockaddr_in addr = peer.getAddr();
+  socklen_t addrLen = 0;
+  // 使用 accept4 可以直接创建非阻塞 socket
+  int conn = ::accept4(sockfd_, (sockaddr *) &addr, &addrLen, SOCK_NONBLOCK);
+  if (conn < 0) {
+    error(1, errno, "socket accept error.");
+  }
+  return conn;
 }

@@ -1,8 +1,8 @@
 add_executable(TestThread TestThread.cc)
-target_link_libraries(TestThread libbase)
+target_link_libraries(TestThread Gweb_base)
 
 add_executable(TestMultiThread TestMultiThread.cc)
-target_link_libraries(TestMultiThread libbase)
+target_link_libraries(TestMultiThread Gweb_base)
 
 add_executable(TestThreadPool TestThreadPool.cc)
-target_link_libraries(TestThreadPool libbase)
+target_link_libraries(TestThreadPool Gweb_base)

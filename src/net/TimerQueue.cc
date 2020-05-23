@@ -87,7 +87,7 @@ TimerId TimerQueue::addTimer(Timer::TimeType now, Timer::TimerCallBack cb, Timer
   // 这样的话会有线程不安全的风险
   // muduo 采用的方式是添加到 I/O 线程中解决
   // 本项目使用的方式是添加互斥锁
-  // 这两种方式到底有什么差别？（性能？）
+  // 这两种方式到底有什么差别？（性能？/使用效率？）
   LockGuard guard(mutex_);
   TimerPtr newTimer = make_shared<Timer>(now, cb, interval);
   // 插入新的定时器

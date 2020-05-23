@@ -27,13 +27,15 @@ public:
 class Socket : noncopyable {
 public:
   Socket();
+  explicit Socket(int sockfd);
   ~Socket();
 
   int fd() const { return sockfd_; }
 
   void bind(Ip4Addr &sockAddr);
   void listen(int backlog);
-  int accept();
+  int accept(Ip4Addr &peer);
+  void close();
 
   void setNonBlocking();
   void setReuseAddr();
@@ -42,11 +44,13 @@ public:
 
 private:
   int sockfd_;
+  bool closed_;
 
   // 封装了socket处理函数及其错误处理部分
   void bindOpt(Ip4Addr &addr);
   void listenOpt(int backlog);
-  int acceptOpt();
+  int acceptOpt(Ip4Addr &peer);
+  void closeOpt();
 };
 
 } // namespace web

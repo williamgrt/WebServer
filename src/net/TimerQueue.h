@@ -25,6 +25,13 @@ public:
   explicit TimerQueue(EventLoop *loop);
   ~TimerQueue();
 
+  /*****
+   * @brief 往定时器队列添加新的定时器
+   * @param now 定时器的到期时间
+   * @param cb 定时器到期的回调函数
+   * @param interval
+   * @return 用户可以使用的定时器接口
+   */
   TimerId addTimer(Timer::TimeType now, Timer::TimerCallBack cb, Timer::TimeType interval);
 
   void cancel(TimerId timerId);
