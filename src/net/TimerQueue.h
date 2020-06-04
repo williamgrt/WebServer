@@ -34,6 +34,10 @@ public:
    */
   TimerId addTimer(Timer::TimeType now, Timer::TimerCallBack cb, Timer::TimeType interval);
 
+  /*****
+   * @brief 删除特定定时器
+   * @param timerId
+   */
   void cancel(TimerId timerId);
 
 private:

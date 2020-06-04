@@ -23,7 +23,7 @@ Acceptor::Acceptor(EventLoop *loop, const std::string &hostname, unsigned short 
 void Acceptor::listen() {
   assert(!listening_);
   listening_ = true;
-  socket_.listen(5);
+  socket_.listen(1024);
 }
 
 void Acceptor::handleRead() {

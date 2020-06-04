@@ -67,7 +67,7 @@ void EventLoop::deleteChannel(Channel *channel) {
   assert(channel->getState() == Channel::kAdded);
   assert(channel->getLoop() == this);
 
-  poller_->deleteChannel(channel);
+  poller_->removeChannel(channel);
 }
 
 void EventLoop::loop() {

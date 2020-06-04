@@ -3,7 +3,10 @@ set(BASE_LIB
     Thread.cc
     Mutex.cc
     Condition.cc
-    ThreadPool.cc)
+    ThreadPool.cc
+    Logger.cc
+    LogBuffer.cc
+    MmapFile.cc CountDownLatch.cc Log.cc Log.h LogStream.cc LogStream.h)
 
 add_definitions(-std=c++11)
 add_library(Gweb_base ${BASE_LIB})

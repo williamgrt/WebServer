@@ -23,7 +23,7 @@ class EPoller : noncopyable {
 
   void addChannel(Channel *channel);
   void modifyChannel(Channel *channel);
-  void deleteChannel(Channel *channel);
+  void removeChannel(Channel *channel);
 
   int fd() const { return epollfd_; }
 

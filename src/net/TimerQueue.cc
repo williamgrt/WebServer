@@ -10,8 +10,12 @@ using namespace std;
 
 namespace web {
 namespace timer {
-// 操作 timerfd 的函数
+// 封装操作timerfd的函数
 
+/**********
+ * @brief 创建新的timerfd
+ * @return 不为0的timerfd描述符
+ */
 int createTimerFd() {
   int timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
   if (timerfd < 0) {
@@ -20,8 +24,9 @@ int createTimerFd() {
   return timerfd;
 }
 
-/*
- * 读取 timerfd
+/**********
+ * @brief 读取timerfd的内容，
+ * @param timerfd
  */
 void readTimerFd(int timerfd) {
   uint64_t numExp;

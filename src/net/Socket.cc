@@ -31,18 +31,15 @@ Ip4Addr::~Ip4Addr() {}
 Socket::Socket() {
   sockfd_ = ::socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd_ == -1) {
-    error(1, errno, "create socket error.");
+    error(1, errno, "Create socket error");
     abort();
   }
-  closed_ = false;
 }
 
-Socket::Socket(int sockfd) : sockfd_(sockfd) {
-  closed_ = false;
-}
+Socket::Socket(int sockfd) : sockfd_(sockfd) {}
 
 Socket::~Socket() {
-  if (!closed_) {
+  if (sockfd_ != -1) {
     closeOpt();
   }
 }
@@ -58,8 +55,9 @@ void Socket::listen(int backlog) {
 }
 
 void Socket::close() {
-  assert(!closed_);
-  closeOpt();
+  if (sockfd_ != -1) {
+    closeOpt();
+  }
 }
 
 int Socket::accept(Ip4Addr &peer) {
@@ -89,9 +87,9 @@ void Socket::setKeepAlive() {
 void Socket::bindOpt(Ip4Addr &sockAddr) {
   auto addr = sockAddr.getAddr();
 
-  sockfd_ = ::bind(sockfd_, (sockaddr *) &addr, sizeof(addr));
-  if (sockfd_ == -1) {
-    error(1, errno, "socket bind error.");
+  int r = ::bind(sockfd_, (sockaddr *) &addr, sizeof(addr));
+  if (r == -1) {
+    error(1, errno, "socket bind error");
     abort();
   }
 }
@@ -99,7 +97,7 @@ void Socket::bindOpt(Ip4Addr &sockAddr) {
 void Socket::listenOpt(int backlog) {
   int r = ::listen(sockfd_, backlog);
   if (r == -1) {
-    error(1, errno, "socket listen error.");
+    error(1, errno, "Socket listen error");
     abort();
   }
 }
@@ -107,8 +105,9 @@ void Socket::listenOpt(int backlog) {
 void Socket::closeOpt() {
   int r = ::close(sockfd_);
   if (r == -1) {
-    error(1, errno, "socket close error.\n");
+    error(1, errno, "socket close error");
   }
+  sockfd_ = -1;
 }
 
 int Socket::acceptOpt(Ip4Addr &peer) {

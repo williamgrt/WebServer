@@ -57,7 +57,7 @@ void EPoller::modifyChannel(Channel *channel) {
   }
 }
 
-void EPoller::deleteChannel(Channel *channel) {
+void EPoller::removeChannel(Channel *channel) {
   assert(channel != nullptr);
   int fd = channel->fd();
   assert(fd2Channel_.count(fd) != 0 && fd2Channel_[fd] == channel);
@@ -80,7 +80,7 @@ void EPoller::deleteChannel(Channel *channel) {
 
 int EPoller::poll(int maxEvent, int waitMs,
                   std::vector<Channel *> &activeChannels) {
-  // 确保epoll已经初始化
+  // 确保 epollfd 已经初始化
   assert(epollfd_ != -1);
   assert(maxEvent > 0);
   assert(waitMs >= -1);

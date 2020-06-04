@@ -29,3 +29,10 @@ void Condition::notify() {
 void Condition::notifyAll() {
   MCHECK(pthread_cond_broadcast(&cond_));
 }
+
+bool Condition::waitForSeconds(int second) {
+  timespec timeout{};
+  clock_getres(CLOCK_REALTIME, &timeout);
+  timeout.tv_sec += second;
+  return ETIMEDOUT == ::pthread_cond_timedwait(&cond_, mutex_.getPthreadMutex(), &timeout);
+}

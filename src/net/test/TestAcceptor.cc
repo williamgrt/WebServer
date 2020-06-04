@@ -16,11 +16,7 @@ void newConnFunction(Socket &&socket, Ip4Addr addr) {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
-    printf("Usage: ./TestAcceptor --port");
-  }
-
-  int port = atoi(argv[1]);
+  int port = 12345;
   EventLoop loop;
   Acceptor acceptor(&loop, "", port);
   acceptor.setNewConnCallBack(newConnFunction);

@@ -18,6 +18,12 @@ public:
 
   void wait();
   void waitIf(const std::function<bool()> &cond);
+  /*********
+   * @brief 让条件变量等待相应的时间
+   * @param second 等待的时间
+   * @return
+   */
+  bool waitForSeconds(int second);
   void notify();
   void notifyAll();
 };
