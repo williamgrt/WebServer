@@ -1,26 +1,29 @@
 #include "Log.h"
+#include "Logger.h"
+#include <pthread.h>
 #include <chrono>
 
 using namespace web;
 using namespace std;
 
-static pthread_once_t attr = PTHREAD_ONCE_INIT;
-static Logger *loggerPtr;
+static pthread_once_t attr_ = PTHREAD_ONCE_INIT;
+static unique_ptr<Logger> logger_;
+string Log::logFileName_ = "./WebServer.txt";
 
 // TODO: 改为多线程的单例模式
 void init() {
   // 创建后台的日志写入线程，并启动
-  loggerPtr = new Logger(Log::getLogFileName());
-  loggerPtr->start();
+  logger_ = make_unique<Logger>(Log::getLogFileName());
+  logger_->start();
 }
 
 void output(const char *line, size_t len) {
-  pthread_once(&attr, init);
-  loggerPtr->append(line, len);
+  pthread_once(&attr_, init);
+  logger_->append(line, len);
 }
 
 Log::Log(const char *name, int line) :
-    baseName_(name), line_(line) {
+    baseName_(name), line_(line), level_(LogLevel::TRACE) {
   formatTime();
 }
 

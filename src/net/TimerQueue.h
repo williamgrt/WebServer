@@ -7,13 +7,12 @@
 
 #include "../base/noncopyable.h"
 #include "Timer.h"
-#include "../base/Mutex.h"
 
 #include <memory>
 #include <queue>
 #include <vector>
 #include <set>
-
+#include <mutex>
 
 namespace web {
 class EventLoop;
@@ -55,7 +54,7 @@ private:
   const int timerfd_;
   std::unique_ptr<Channel> timerfdChannel_;
 
-  Mutex mutex_; // 保护定时器队列
+  std::mutex mutex_; // 保护定时器队列
   TimerList timers_; // 所有的定时器
 
   std::vector<Timer> activeTimers_;

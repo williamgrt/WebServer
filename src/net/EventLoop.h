@@ -5,7 +5,6 @@
 #include <thread>
 #include <vector>
 #include "Timer.h"
-#include "../base/Mutex.h"
 #include "TimerQueue.h"
 
 namespace web {
@@ -47,16 +46,16 @@ private:
   bool quit_;
   int eventCapacity_;
   std::unique_ptr<EPoller> poller_; // 执行 epoll 操作多路复用器
-  pid_t ownerId_; // EventLoop 所处的线程
+  std::thread::id ownerId_; // EventLoop 所处的线程
 
-  Mutex mutex_; // 保护任务队列
+  std::mutex mutex_; // 保护任务队列
   std::vector<Functor> pendingFunctors_; // 任务队列
 
-  int wakeupFd_;
+  int wakeupFd_; // 唤醒事件奋发器
   std::unique_ptr<Channel> wakeupChannel_;
   bool callingPendingFunctors_;
 
-  std::unique_ptr<TimerQueue> timerQueue_;
+  std::unique_ptr<TimerQueue> timerQueue_; // 每个 eventloop 绑定一个定时器，处理定时事件
 
   void wakeup();
   void doPendingFunctors();

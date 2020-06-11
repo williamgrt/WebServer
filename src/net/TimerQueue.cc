@@ -93,7 +93,7 @@ TimerId TimerQueue::addTimer(Timer::TimeType now, Timer::TimerCallBack cb, Timer
   // muduo 采用的方式是添加到 I/O 线程中解决
   // 本项目使用的方式是添加互斥锁
   // 这两种方式到底有什么差别？（性能？/使用效率？）
-  LockGuard guard(mutex_);
+  lock_guard<mutex> guard(mutex_);
   TimerPtr newTimer = make_shared<Timer>(now, cb, interval);
   // 插入新的定时器
   bool result = addTimer(newTimer);
@@ -130,7 +130,7 @@ bool TimerQueue::addTimer(const TimerPtr &timer) {
  */
 void TimerQueue::cancel(TimerId timerId) {
   assert(timerId.timer_.lock() != nullptr);
-  LockGuard guard(mutex_);
+  lock_guard<mutex> guard(mutex_);
 
   TimerPtr delTimer = timerId.timer_.lock();
   Entry entry = make_pair(delTimer->getExpire(), delTimer);
@@ -150,7 +150,7 @@ vector<TimerQueue::Entry> TimerQueue::getExpiredTimer(Timer::TimeType now) {
   Timer::TimeType curr = Timer::now();
   Entry entry = make_pair(curr, std::shared_ptr<Timer>());
   {
-    LockGuard guard(mutex_);
+    lock_guard<mutex> guard(mutex_);
     auto it = std::lower_bound(timers_.begin(), timers_.end(), entry);
     assert(it == timers_.end() || now < it->first);
     // 获取所有的过期定时器
@@ -180,7 +180,7 @@ void TimerQueue::handleRead() {
 
 void TimerQueue::reset(vector<Entry> &expired) {
   // 通过互斥锁保护定时器队列
-  LockGuard guard(mutex_);
+  lock_guard<mutex> guard(mutex_);
   // 重置定时器
   for (auto it: expired) {
     // 重置循环定时器的时间

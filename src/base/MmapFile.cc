@@ -37,7 +37,7 @@ void MmapFile::open(const char *name, bool append) {
   if (append) {
     // 文件的写入方式是往尾部添加数据
     // 因此需要调整类内数据偏移量if
-      struct stat st{};
+    struct stat st{};
     ::fstat(fd_, &st);
     size_ = std::max<std::size_t>(kDefaultSize, st.st_size);
     offset_ = st.st_size;
@@ -60,8 +60,9 @@ void MmapFile::open(const string &name, bool append) {
 void MmapFile::close() {
   if (fd_ != kInvalid) {
     // 关闭文件以及存储映射区
-    ::close(fd_);
+    ::ftruncate(fd_, offset_);
     ::munmap(memory_, size_);
+    ::close(fd_);
     // 重设类内变量
     fd_ = kInvalid;
     memory_ = invalidAddr;
@@ -76,9 +77,9 @@ void MmapFile::sync() {
     return;
   }
   // 保证日志可以被操作系统写入到磁盘中
-  int r = ::msync(memory_ + sync_, offset_ - sync_, MS_ASYNC);
+  int r = ::msync(memory_ + sync_, offset_ - sync_, MS_SYNC);
   if (r < 0) {
-    error(fileno(stderr), errno, "flush log to file error.");
+    error(fileno(stderr), errno, "flush log to file error");
   }
   sync_ = offset_;
 }
@@ -109,8 +110,6 @@ void MmapFile::truncate(std::size_t size) {
   }
 
   // 重新映射文件
-  ::munmap(memory_, oldSize);
-  memory_ = invalidAddr;
   mapFileToMemory();
 }
 
@@ -119,7 +118,7 @@ bool MmapFile::mapFileToMemory() {
     return false;
   }
 
-  memory_ = (char *)::mmap(0, size_, PROT_WRITE, MAP_SHARED, fd_, 0);
+  memory_ = (char *) ::mmap(0, size_, PROT_WRITE, MAP_SHARED, fd_, 0);
   return (memory_ != invalidAddr);
 }
 
@@ -131,7 +130,7 @@ void MmapFile::expendSpace(std::size_t len) {
 
   // 调整内存映射大小
   std::size_t newSize = size_;
-  while (offset_ + len < newSize) {
+  while (offset_ + len > newSize) {
     newSize += kDefaultSize;
   }
 

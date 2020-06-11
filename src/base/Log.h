@@ -6,17 +6,17 @@
 #define WEBSERVER_SRC_BASE_LOG_H
 
 #include "noncopyable.h"
-#include "Logger.h"
 #include "LogStream.h"
 
 namespace web {
 
 enum class LogLevel {
-  NONE = 0x00,
-  INFO = 0x01,
+  TRACE = 0x01,
   DEBUG = 0x01 << 1,
-  ERROR = 0x01 << 2,
-  FATAL = 0x01 << 3,
+  INFO = 0x01 << 2,
+  WARN = 0x01 << 3,
+  ERROR = 0x01 << 4,
+  FATAL = 0x01 << 5,
   ALL = 0x7fffffff
 };
 
@@ -33,16 +33,17 @@ public:
 
 private:
   LogStream stream_;
-  LogLevel level_;
   std::string baseName_;
   int line_;
-
+  LogLevel level_;
+  // 所有的日志都写入到同一个文件中
   static std::string logFileName_;
 
   void formatTime();
 };
 
-#define LOG_INFO 0
+#define LOG_INFO Log(__FILE__, __LINE__).stream()
+#define LOG_DEBUG Log(__FILE__, __LINE__).stream()
 
 }
 

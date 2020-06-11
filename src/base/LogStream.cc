@@ -92,15 +92,13 @@ LogStream &LogStream::operator<<(long double value) {
 }
 
 LogStream &LogStream::operator<<(char c) {
-  buffer_.append(&c, 1);
+  buffer_.append(const_cast<const char *>(&c), 1);
   return *this;
 }
 
 LogStream &LogStream::operator<<(char *str) {
   if (str) {
     buffer_.append(str, strlen(str));
-  } else {
-    buffer_.append("[NULL]", 6);
   }
   return *this;
 }
@@ -108,8 +106,6 @@ LogStream &LogStream::operator<<(char *str) {
 LogStream &LogStream::operator<<(const char *str) {
   if (str) {
     buffer_.append(str, strlen(str));
-  } else {
-    buffer_.append("[NULL]", 6);
   }
   return *this;
 }

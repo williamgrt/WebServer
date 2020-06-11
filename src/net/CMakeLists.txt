@@ -6,7 +6,7 @@ set(NET_LIB
     Timer.cc
     Acceptor.cc
     TimerQueue.cc
-    Dispatcher.h)
+    Dispatcher.h Buffer.cc Buffer.h EventLoopThread.cc)
 
 add_library(Gweb_net ${NET_LIB})
 

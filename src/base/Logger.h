@@ -1,44 +1,55 @@
 #ifndef WEBSERVER_SRC_BASE_LOGGER_H
 #define WEBSERVER_SRC_BASE_LOGGER_H
 
-#include "../base/noncopyable.h"
-#include "../base/Thread.h"
-#include "../base/Mutex.h"
-#include "../base/Condition.h"
+#include "noncopyable.h"
 #include "LogBuffer.h"
+#include "CountDownLatch.h"
 #include <memory>
 #include <deque>
 #include <unordered_map>
+#include <map>
+#include <vector>
+#include <mutex>
+#include <thread>
+#include <queue>
 
 namespace web {
 // 异步日志
 class Logger : noncopyable {
 public:
-  Logger(const std::string &fileName);
+  explicit Logger(const std::string &fileName);
+  ~Logger();
 
   void start();
-  void append(const char *line, int len);
+  void append(const char *line, std::size_t len);
   void stop();
 
 private:
   using Buffer = LogBuffer<kLargeSize>;
-  using BufferPtr = std::shared_ptr<Buffer>;
-  using BufferQueue = std::deque<BufferPtr>;
+  using BufferPtr = std::unique_ptr<Buffer>;
+  using BufferVector = std::vector<BufferPtr>;
 
-  bool running_;
+  static const int kEntryNum = 12;
+
   std::string logName_;
+  bool running_;
 
-  std::unordered_map<Thread::id, BufferPtr> buffers_; // 每个线程对应一个缓冲区
-  Mutex bufferMutex_;
+  BufferVector freeBuffers_;
+  BufferVector fullBuffers_;
 
-  BufferQueue freeBufferQueue_; // 空闲缓冲区
-  Mutex freeMutex_;
+  std::mutex mutex_;
+  std::condition_variable cond_;
 
-  BufferQueue flushBufferQueue_; // 刷新缓冲区
-  Mutex flushMutex_;
-  Condition flushCond_;
+  // 把锁分为细粒度的锁
+  struct Entry {
+    std::mutex mutex;
+    std::unordered_map<std::thread::id, BufferPtr> buffers;
+  };
 
-  Thread flushThread_; // 后台刷新线程
+  std::vector<Entry> tidToMap_;
+
+  std::thread flushThread_; // 后台刷新线程
+  CountDownLatch latch_;
 
   void flush();
 };

@@ -4,14 +4,16 @@ using namespace web;
 using namespace std;
 
 void CountDownLatch::await() {
-  LockGuard guard(mutex_);
-  cond_.waitIf([this]() { return this->count_ > 0;});
+  unique_lock<mutex> lock(mutex_);
+  while (count_ > 0) {
+    cond_.wait(lock);
+  }
 }
 
 void CountDownLatch::countDown() {
-  LockGuard guard(mutex_);
+  lock_guard<mutex> guard(mutex_);
   count_--;
   if (count_ == 0) {
-    cond_.notifyAll();
+    cond_.notify_all();
   }
 }

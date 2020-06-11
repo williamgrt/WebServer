@@ -6,6 +6,7 @@
 #include <chrono>
 
 namespace web {
+const int kMaxNumSize = 12; // 每个数字可以占用的最多字节数
 class LogStream : noncopyable {
 public:
   using Buffer = LogBuffer<kSmallSize>;
@@ -33,8 +34,6 @@ public:
 
 private:
   Buffer buffer_;
-
-  static const int kMaxNumSize; // 每个数字可以占用的最多字节数
 };
 }
 

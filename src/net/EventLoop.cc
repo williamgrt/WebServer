@@ -2,7 +2,6 @@
 #include "Channel.h"
 #include "EPoller.h"
 #include "Utils.h"
-#include "../base/Thread.h"
 #include <algorithm>
 #include <sys/eventfd.h>
 
@@ -31,7 +30,7 @@ EventLoop::EventLoop()
       quit_(false),
       eventCapacity_(MAX_EVENT_NUM),
       poller_(make_unique<EPoller>()),
-      ownerId_(Thread::gettid()),
+      ownerId_(this_thread::get_id()),
       wakeupFd_(createEventFd()),
       wakeupChannel_(make_unique<Channel>(this, wakeupFd_)),
       callingPendingFunctors_(false),
@@ -94,7 +93,7 @@ void EventLoop::quit() {
 }
 
 bool EventLoop::isInLoopThread() const {
-  return ownerId_ == Thread::gettid();
+  return ownerId_ == this_thread::get_id();
 }
 
 void EventLoop::assertInLoopThread() const {
@@ -116,7 +115,7 @@ void EventLoop::queueInLoop(const Functor &cb) {
   {
     // 保证线程安全
     // 有可能会有多个工作线程调用该函数
-    LockGuard lock(mutex_);
+    lock_guard<mutex> lock(mutex_);
     pendingFunctors_.push_back(cb);
   }
 
@@ -135,7 +134,7 @@ void EventLoop::doPendingFunctors() {
   // 仅在交换 functor 期间加锁
   // 缩短临界区，防止 queueInLoop 等待过长时间
   {
-    LockGuard guard(mutex_);
+    lock_guard<mutex> guard(mutex_);
     functorList.swap(pendingFunctors_);
   }
   for (const auto &functor: functorList) {

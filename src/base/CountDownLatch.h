@@ -1,8 +1,9 @@
 #ifndef WEBSERVER_SRC_BASE_COUNTDOWNLATCH_H
 #define WEBSERVER_SRC_BASE_COUNTDOWNLATCH_H
 
-#include "Mutex.h"
-#include "Condition.h"
+#include <mutex>
+#include <condition_variable>
+#include "noncopyable.h"
 
 namespace web {
 
@@ -11,7 +12,7 @@ public:
   explicit CountDownLatch(int count) :
       count_(count),
       mutex_(),
-      cond_(mutex_) {}
+      cond_() {}
   ~CountDownLatch() = default;
 
   void await();
@@ -19,8 +20,8 @@ public:
 
 private:
   int count_;
-  Mutex mutex_;
-  Condition cond_;
+  std::mutex mutex_;
+  std::condition_variable cond_;
 };
 
 }
