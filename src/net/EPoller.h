@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include "../base/noncopyable.h"
+#include "Timer.h"
 
 namespace web {
 // 由于没有包含相应的头文件，必须提前声明
@@ -28,7 +29,7 @@ class EPoller : noncopyable {
   int fd() const { return epollfd_; }
 
   // 打开epoll并进行监听
-  int poll(int maxEvent, int waitMs, std::vector<Channel *> &activeChannels);
+  Timer::TimeType poll(int maxEvent, int waitMs, std::vector<Channel *> &activeChannels);
 };
 
 } // namespace web

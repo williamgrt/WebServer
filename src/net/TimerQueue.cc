@@ -26,7 +26,7 @@ int createTimerFd() {
 
 /**********
  * @brief 读取timerfd的内容，
- * @param timerfd
+ * @param timerfd 指定的timerfd
  */
 void readTimerFd(int timerfd) {
   uint64_t numExp;
@@ -37,9 +37,10 @@ void readTimerFd(int timerfd) {
   }
 }
 
-/*
- * 计算给定时间与当前时间的差值
- * 用于重置计时器时 timerfd 过期时间的设置
+/********
+ * @brief 计算指定时间距离当前时间的差值
+ * @param when
+ * @return
  */
 timespec howMuchTimeFromNow(Timer::TimeType when) {
   int64_t microseconds = Timer::now() - when;
@@ -75,7 +76,7 @@ TimerQueue::TimerQueue(EventLoop *loop)
       timerfd_(timer::createTimerFd()),
       timerfdChannel_(new Channel(loop_, timerfd_)),
       mutex_() {
-  timerfdChannel_->setReadCallBack(std::bind(&TimerQueue::handleRead, this));
+  timerfdChannel_->setReadCallback(std::bind(&TimerQueue::handleRead, this));
   timerfdChannel_->enableRead();
 }
 

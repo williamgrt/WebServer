@@ -3,7 +3,6 @@
 //
 
 #include "../EventLoop.h"
-#include <stdio.h>
 #include <unistd.h>
 
 web::EventLoop* g_loop;

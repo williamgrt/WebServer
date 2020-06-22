@@ -44,6 +44,11 @@ Socket::~Socket() {
   }
 }
 
+Socket::Socket(Socket &&socket): sockfd_(socket.fd()) {
+  // 不能让两个Socket引用到同一个连接描述符
+  socket.setInvalid();
+}
+
 void Socket::bind(Ip4Addr &sockAddr) {
   assert(sockfd_ != -1);
   bindOpt(sockAddr);
@@ -62,6 +67,10 @@ void Socket::close() {
 
 int Socket::accept(Ip4Addr &peer) {
   return acceptOpt(peer);
+}
+
+void Socket::shutdownWrite() {
+  shutdownOpt(SHUT_WR);
 }
 
 void Socket::setNoDelay() {
@@ -120,3 +129,12 @@ int Socket::acceptOpt(Ip4Addr &peer) {
   }
   return conn;
 }
+
+void Socket::shutdownOpt(int how) {
+  int res = ::shutdown(sockfd_, how);
+  if (res == -1) {
+    // TODO: Add error log.
+  }
+}
+
+

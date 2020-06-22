@@ -1,6 +1,5 @@
 #include "../EventLoop.h"
-#include "../Timer.h"
-#include "../../base/Thread.h"
+#include <thread>
 #include <cstdio>
 
 using namespace web;
@@ -37,7 +36,7 @@ void threadFunc() {
 int main() {
   EventLoop loop;
   g_loop = &loop;
-  Thread t(threadFunc);
-  t.start();
+  thread t(threadFunc);
   g_loop->loop();
+  t.join();
 }

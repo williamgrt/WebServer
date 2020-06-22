@@ -1,8 +1,5 @@
 set(BASE_LIB
-    Thread.cc
     CountDownLatch.cc
-    Mutex.cc
-    Condition.cc
     ThreadPool.cc
     Logger.cc
     MmapFile.cc

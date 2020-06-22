@@ -11,7 +11,7 @@ class EventLoop;
 
 class Acceptor {
 public:
-  using NewConnCallBack = std::function<void(Socket&&, Ip4Addr)>;
+  using NewConnCallBack = std::function<void(Socket &&, Ip4Addr)>;
 
   Acceptor(EventLoop *loop, const std::string &hostname, unsigned short port);
   ~Acceptor() {}
@@ -20,6 +20,7 @@ public:
 
   void listen();
   bool isListening() const { return listening_; }
+  Ip4Addr getLocalAddr() { return addr_; }
 
 private:
   void handleRead();

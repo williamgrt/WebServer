@@ -11,7 +11,6 @@ namespace web {
 class Channel;
 class EPoller;
 
-// 单线程版本的EventLoop
 class EventLoop {
 
 public:
@@ -46,7 +45,7 @@ private:
   bool quit_;
   int eventCapacity_;
   std::unique_ptr<EPoller> poller_; // 执行 epoll 操作多路复用器
-  std::thread::id ownerId_; // EventLoop 所处的线程
+  std::thread::id ownerId_; // EventLoop 所处的线程（保证每个线程只有一个 EventLoop）
 
   std::mutex mutex_; // 保护任务队列
   std::vector<Functor> pendingFunctors_; // 任务队列

@@ -16,7 +16,7 @@ Acceptor::Acceptor(EventLoop *loop, const std::string &hostname, unsigned short 
   // 让socket变为非阻塞的socket
   socket_.setNonBlocking();
   // 让 acceptor 可以进行回调
-  socketChannel_->setReadCallBack(std::bind(&Acceptor::handleRead, this));
+  socketChannel_->setReadCallback(std::bind(&Acceptor::handleRead, this));
   socketChannel_->enableRead();
 }
 
@@ -26,6 +26,7 @@ void Acceptor::listen() {
   socket_.listen(1024);
 }
 
+// acceptor接收到新连接后调用的函数
 void Acceptor::handleRead() {
   loop_->assertInLoopThread();
 

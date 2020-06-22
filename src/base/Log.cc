@@ -2,6 +2,7 @@
 #include "Logger.h"
 #include <pthread.h>
 #include <chrono>
+#include <memory>
 
 using namespace web;
 using namespace std;

@@ -9,7 +9,7 @@ using namespace std;
 using namespace web;
 
 void print() {
-  cout << CurrentThread::getName() << '\n';
+  cout << 1 << '\n';
 }
 
 void test(int maxSize) {

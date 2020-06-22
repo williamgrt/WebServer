@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <cassert>
+#include <chrono>
 
 using namespace web;
 using namespace std;
@@ -21,6 +22,7 @@ Logger::Logger(const std::string &fileName)
   freeBuffers_.reserve(16); // 预先分配缓冲区
   // 提前访问缓冲区，避免写入日志时产生 page fault
   // 是否有用？（实验效果随机性较强，可能跟mmap有关）
+  // 做了实验发现关联不大，可能有其他的改进措施
   for (auto &buffer: freeBuffers_) {
     buffer->clear();
   }

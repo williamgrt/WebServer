@@ -2,6 +2,7 @@
 #include "EventLoop.h"
 #include "Utils.h"
 #include <poll.h>
+#include <sys/epoll.h>
 
 using namespace web;
 
@@ -12,15 +13,22 @@ const int Channel::kDeleted = 2; // 从loop中删除
 
 // 表示注册在channel上的事件类型
 const int Channel::kNoneEvent = 0; // 没有事件
-const int Channel::kReadEvent = POLLIN | POLLPRI; // 可读事件
+const int Channel::kReadEvent = POLLIN | POLLPRI ; // 可读事件
 const int Channel::kWriteEvent = POLLOUT; // 可写事件
-const int Channel::kErrorEvent = POLLERR; // 错误事件
+const int Channel::kErrorEvent = POLLERR | POLLNVAL; // 错误事件
+const int Channel::kCloseEvent = POLLHUP;
 
 Channel::Channel(EventLoop *loop, int fd)
-    : loop_(loop), fd_(fd), events_(kNoneEvent), revents_(kNoneEvent),
-      state_(kNew) {}
+    : loop_(loop),
+      fd_(fd),
+      events_(kNoneEvent),
+      revents_(kNoneEvent),
+      state_(kNew),
+      handlingEvent_(false) {}
 
 Channel::~Channel() {
+  // 正在处理事件的时候不能析构
+  assert(!handlingEvent_);
   events_ = 0;
   // 不要关闭文件描述符
   // 文件描述符的关闭由持有该结构的类实现
@@ -33,7 +41,7 @@ void Channel::setState(int state) {
 }
 
 void Channel::setRead(bool label) {
-  label ? events_ |= kReadEvent : events_ &= kReadEvent;
+  label ? events_ |= kReadEvent : events_ &= ~kReadEvent;
   update();
 }
 
@@ -65,22 +73,32 @@ void Channel::handleError() {
   }
 }
 
+void Channel::handleClose() {
+  if (closeCb_) {
+    closeCb_();
+  }
+}
+
 // 根据接受事件类型执行不同的回调函数
 void Channel::handleEvent() {
+  handlingEvent_ = true;
   // 可读事件
-  if (revents_ & kReadEvent) {
+  if (revents_ & (POLLIN | POLLPRI | POLLRDHUP)) {
     handleRead();
   }
-
   // 可写事件
-  if (revents_ & kWriteEvent) {
+  if (revents_ & POLLOUT) {
     handleWrite();
   }
-
   // 错误事件
-  if (revents_ & kErrorEvent) {
+  if (revents_ & (POLLERR | POLLNVAL)) {
     handleError();
   }
+  // 关闭连接
+  if (revents_ & POLLHUP && !(revents_ & POLLIN)) {
+    handleClose();
+  }
+  handlingEvent_ = false;
 }
 
 void Channel::update() {

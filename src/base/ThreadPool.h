@@ -5,9 +5,10 @@
 #include <vector>
 #include <deque>
 #include <memory>
-#include "Mutex.h"
-#include "Condition.h"
-#include "Thread.h"
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include "noncopyable.h"
 
 namespace web {
 /*
@@ -45,10 +46,10 @@ class ThreadPool : public noncopyable {
   size_t maxTaskNum_;
   int threadNum_;
 
-  Mutex mutex_;
-  Condition empty_;
-  Condition full_;
-  std::vector<std::unique_ptr<Thread>> threads_;
+  std::mutex mutex_;
+  std::condition_variable empty_;
+  std::condition_variable full_;
+  std::vector<std::unique_ptr<std::thread>> threads_;
   std::deque<Task> tasks_;
 };
 }

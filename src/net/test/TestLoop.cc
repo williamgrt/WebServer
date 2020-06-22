@@ -30,7 +30,7 @@ int main() {
 
   auto channel = make_shared<Channel>(&loop, timer);
   channel->enableRead();
-  channel->setReadCallBack(timeout);
+  channel->setReadCallback(timeout);
   cout << "start looping\n";
 
   loop.loop();

@@ -9,5 +9,11 @@ target_link_libraries(TestTimer Gweb_net Gweb_base)
 add_executable(TestRunInLoop TestRunInLoop.cc)
 target_link_libraries(TestRunInLoop Gweb_net Gweb_base)
 
-add_executable(TestAcceptor TestAcceptor.cc)
+add_executable(TestAcceptor AcceptorTest.cc)
 target_link_libraries(TestAcceptor Gweb_net Gweb_base)
+
+add_executable(Echo EchoTest.cc)
+target_link_libraries(Echo Gweb_net Gweb_base)
+
+add_executable(LoopThreadTest LoopThreadTest.cc)
+target_link_libraries(LoopThreadTest Gweb_net Gweb_base)

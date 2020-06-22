@@ -19,6 +19,7 @@ public:
   ~Ip4Addr();
 
   const sockaddr_in &getAddr() { return addr_; }
+  unsigned int getHostPort() { return addr_.sin_port; }
 
 private:
   sockaddr_in addr_;
@@ -30,10 +31,11 @@ class Socket : noncopyable {
 public:
   Socket();
   explicit Socket(int sockfd);
+  Socket(Socket &&socket);
   ~Socket();
 
   int fd() const { return sockfd_; }
-  bool isInvalid() { return sockfd_ < 0; }
+  bool isInvalid() const { return sockfd_ < 0; }
   void setInvalid() { sockfd_ = -1; }
 
   /* ------------------ socket 操作函数 ------------------ */
@@ -41,6 +43,7 @@ public:
   void listen(int backlog);
   int accept(Ip4Addr &peer);
   void close();
+  void shutdownWrite();
 
   void setNonBlocking();
   void setReuseAddr();
@@ -55,6 +58,7 @@ private:
   void listenOpt(int backlog);
   int acceptOpt(Ip4Addr &peer);
   void closeOpt();
+  void shutdownOpt(int how);
 };
 
 } // namespace web
