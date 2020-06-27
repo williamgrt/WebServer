@@ -27,7 +27,7 @@ void EPoller::addChannel(Channel *channel) {
   int fd = channel->fd();
   epoll_event event;
   bzero(&event, sizeof(event));
-  event.events = channel->getEvents();
+  event.events = channel->getEvents() | EPOLLET;
   event.data.ptr = channel;
 
   int r = ::epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &event);

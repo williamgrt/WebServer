@@ -18,18 +18,27 @@ class Ip4Addr;
 class EventLoopThreadPool;
 
 class TcpServer : noncopyable {
-public:
+ public:
   TcpServer(EventLoop *loop, const std::string &hostname, unsigned int port);
   ~TcpServer();
 
   void setThreadNum(int threadNum);
   void start();
 
-  void setConnectionCallback(const ConnectionCallback &cb) { connectionCallBack_ = cb; }
-  void setMessageCallback(const MessageCallback &cb) { messageCallBack_ = cb; }
-  void setWriteCompleteCallback(const WriteCompleteCallback &cb) { writeCompleteCallback_ = cb; }
+  void setConnectionCallback(const ConnectionCallback &cb) {
+    connectionCallBack_ = cb;
+  }
+  void setMessageCallback(const MessageCallback &cb) {
+    messageCallBack_ = cb;
+  }
+  void setWriteCompleteCallback(const WriteCompleteCallback &cb) {
+    writeCompleteCallback_ = cb;
+  }
+  EventLoop *getLoop() {
+    return loop_;
+  }
 
-private:
+ private:
   using ConnectionMap = std::unordered_map<std::string, TcpConnectionPtr>;
 
   // Acceptor创建新连接的回调函数

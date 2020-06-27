@@ -8,13 +8,13 @@ using namespace std;
 void onConnection(const TcpConnectionPtr &conn) {
   if (conn->connected()) {
     cout << "onConnection(): new connection [" << conn->name() << "] from " << conn->getPeerAddr().getHostPort()
-         << "\n";
+         << "in thread " << this_thread::get_id() << "\n";
   } else {
     cout << "onConnection(): connection [" << conn->name() << "] is down\n";
   }
 }
 
-void onMessage(const TcpConnectionPtr &conn, Buffer *buffer, Timer::TimeType timestamp) {
+void onMessage(const TcpConnectionPtr &conn, Buffer *buffer) {
   conn->send(buffer->retrieveAsString());
 }
 
@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   unsigned int port = 12345;
   TcpServer server(&loop, "", port);
   int threadNum = atoi(argv[1]);
-  // TODO: 解决多线程问题
+
   server.setThreadNum(threadNum);
   server.setConnectionCallback(onConnection);
   server.setMessageCallback(onMessage);

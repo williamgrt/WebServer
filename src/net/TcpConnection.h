@@ -14,7 +14,7 @@ class Channel;
 
 class TcpConnection : noncopyable,
                       public std::enable_shared_from_this<TcpConnection> {
-public:
+ public:
   TcpConnection(EventLoop *loop, Socket &socket, Ip4Addr &localAddr, Ip4Addr &peerAddr, const std::string &name);
   ~TcpConnection();
 
@@ -28,6 +28,8 @@ public:
   void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
   void setCloseCallback(const CloseCallback &cb) { closeCallback_ = cb; }
   void setWriteCompleteCallback(const WriteCompleteCallback &cb) { writeCompleteCallback_ = cb; }
+  void setTimestamp(void *timestamp) { timeoutTimestamp_ = timestamp; }
+  void *getTimestamp() { return timeoutTimestamp_; }
 
   void connectEstablished();
   void connectDestroyed();
@@ -44,10 +46,26 @@ public:
    * @brief 主动关闭写端，实现优雅断开，实际的I/O操作需要到线程中执行。
    */
   void shutdown();
+  /*****
+   * @brief 强制关闭连接
+   */
   void forceClose();
   void delayClose(int seconds);
 
-private:
+  /*****
+   * @brief 关闭Nagle算法
+   */
+  void setNoDelay() {
+    socket_->setNoDelay();
+  }
+  /*****
+   * @brief 可以重用连接地址
+   */
+  void setReuseAddr() {
+    socket_->setReuseAddr();
+  }
+
+ private:
   void handleRead();
   void handleWrite();
   void handleClose();
@@ -78,6 +96,7 @@ private:
   State state_;
   Buffer inputBuffer_;
   Buffer outputBuffer_;
+  void *timeoutTimestamp_; // 过期时间戳
 };
 }
 

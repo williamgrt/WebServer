@@ -10,7 +10,7 @@ set(NET_LIB
     EventLoopThread.cc
     TcpServer.cc
     TcpConnection.cc
-    EventLoopThreadPool.cc EventLoopThreadPool.h)
+    EventLoopThreadPool.cc HeartBeatTcpServer.cc HeartBeatTcpServer.h)
 
 add_library(Gweb_net ${NET_LIB})
 

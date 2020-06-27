@@ -40,7 +40,9 @@ private:
   std::mutex mutex_;
   std::condition_variable cond_;
 
-  // 把锁分为细粒度的锁
+  /*****
+   * @brief 根据线程号，把线程散列到不同的桶中
+   */
   struct Entry {
     std::mutex mutex;
     std::unordered_map<std::thread::id, BufferPtr> buffers;

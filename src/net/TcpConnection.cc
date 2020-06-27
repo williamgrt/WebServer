@@ -18,12 +18,16 @@ TcpConnection::TcpConnection(EventLoop *loop,
     channel_(make_unique<Channel>(loop, socket_->fd())),
     localAddr_(localAddr),
     peerAddr_(peerAddr),
-    state_(kConnecting) {
+    state_(kConnecting),
+    timeoutTimestamp_(nullptr) {
+  // 设置连接属性
+  setReuseAddr();
+  setNoDelay();
   // 设置channel的回调函数
   channel_->setReadCallback(std::bind(&TcpConnection::handleRead, this));
   channel_->setCloseCallback(std::bind(&TcpConnection::handleClose, this));
   channel_->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
-
+  // TODO: change standard output to log output
   cout << "TcpConnection create\n";
 }
 
@@ -31,7 +35,6 @@ TcpConnection::~TcpConnection() {
   cout << "TcpConnection close " << name_ << " at " << this << " fd = " << channel_->fd() << "\n";
 }
 
-// TODO: 如果连接正在创建时，客户端crash了，怎么办？
 void TcpConnection::connectEstablished() {
   loop_->assertInLoopThread();
   assert(state_ == kConnecting);
@@ -62,11 +65,10 @@ void TcpConnection::handleRead() {
   loop_->assertInLoopThread();
   int saveError = 0;
   int n = inputBuffer_.readFrom(channel_->fd(), &saveError);
-  Timer::TimeType now = Timer::now();
   if (n > 0) {
     // 对方发送了新的消息
     if (messageCallback_) {
-      messageCallback_(shared_from_this(), &inputBuffer_, now);
+      messageCallback_(shared_from_this(), &inputBuffer_);
     }
   } else if (n == 0) {
     // 对方已经关闭连接，read调用返回0
@@ -80,7 +82,7 @@ void TcpConnection::handleRead() {
 
 void TcpConnection::handleClose() {
   loop_->assertInLoopThread();
-  // 通知绑定的 poller 不需要监听 channel 了
+  // 通知绑定的poller不需要监听channel了
   channel_->disableAll();
   // 调用绑定的close回调函数（实际调用的是TcpServer::removeConnection）
   closeCallback_(shared_from_this());
@@ -99,7 +101,7 @@ void TcpConnection::connectDestroyed() {
 }
 
 void TcpConnection::handleError() {
-
+  // TODO: Add output log
 }
 
 void TcpConnection::handleWrite() {
@@ -107,12 +109,14 @@ void TcpConnection::handleWrite() {
 
   if (channel_->isWriting()) {
     int n = ::write(channel_->fd(),
-        outputBuffer_.beginToRead(),
-        outputBuffer_.readableBytes());
+                    outputBuffer_.beginToRead(),
+                    outputBuffer_.readableBytes());
     if (n > 0) {
       outputBuffer_.retrieve(n);
       // 没有新的可读数据了
       if (outputBuffer_.readableBytes() == 0) {
+        // 关闭写事件监听
+        channel_->setWrite(false);
         if (state_ == kDisconnecting) {
           shutdownInLoop();
         }
@@ -130,20 +134,26 @@ void TcpConnection::handleWrite() {
 void TcpConnection::sendInLoop(const string &data) {
   loop_->assertInLoopThread();
   ssize_t nWrote = 0;
-  // 如果当前的 channel 没有执行监听任务，并且 outputBuffer 中没有需要发送的数据
-  // 可以尝试直接发送
+  // 如果当前的 channel 没有执行监听任务，并且 outputBuffer 中没有需要发送的数据，可以尝试直接发送
+  // 主要的原因是可以加快发送的效率
+  // 如果所有的数据都是通过
   if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0) {
     nWrote = ::write(channel_->fd(), data.data(), data.size());
     if (nWrote >= 0) {
-
+      // TODO: Add codes to handle this problem
     } else {
-      // 出错
+      // 写出错
       nWrote = 0;
       // TODO:
+      if (errno != EWOULDBLOCK) {
+        if (errno == EPIPE || errno == ECONNRESET) {
+
+        }
+      }
     }
   }
 
-  // 数据没有发完，需要写入到buffer中（为什么？）
+  // 数据没有发完，需要写入到buffer中
   assert(nWrote >= 0);
   if (static_cast<std::size_t>(nWrote) < data.size()) {
     outputBuffer_.append(data.data() + nWrote, data.size() - nWrote);

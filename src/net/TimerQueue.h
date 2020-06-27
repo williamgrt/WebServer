@@ -17,7 +17,6 @@
 namespace web {
 class EventLoop;
 class Channel;
-class Mutex;
 
 class TimerQueue : noncopyable {
 public:
@@ -32,10 +31,9 @@ public:
    * @return 用户可以使用的定时器接口
    */
   TimerId addTimer(Timer::TimeType now, Timer::TimerCallBack cb, Timer::TimeType interval);
-
   /*****
    * @brief 删除特定定时器
-   * @param timerId
+   * @param timerId 用户指定的定时器
    */
   void cancel(TimerId timerId);
 

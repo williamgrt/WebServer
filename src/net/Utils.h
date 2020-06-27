@@ -23,8 +23,7 @@ using ConnectionCallback = std::function<void(const TcpConnectionPtr &)>;
 
 // 接收到消息后调用的回调函数
 using MessageCallback = std::function<void(const TcpConnectionPtr,
-    Buffer *,
-    Timer::TimeType )>;
+                                           Buffer *)>;
 
 // 关闭连接时的回调函数
 using CloseCallback = std::function<void(const TcpConnectionPtr &)>;
