@@ -1,25 +1,25 @@
-#include "EPoller.h"
+#include "Epoll.h"
 #include "Channel.h"
 #include "EventLoop.h"
-#include "Utils.h"
+#include "Defs.h"
 #include <cstring>
 
 using namespace web;
 using namespace std;
 
-EPoller::EPoller() {
+Epoll::Epoll() {
   epollfd_ = ::epoll_create1(EPOLL_CLOEXEC);
   assert(epollfd_ > 0);
 }
 
-EPoller::~EPoller() {
+Epoll::~Epoll() {
   if (epollfd_ != -1) {
     // epoll 没有被关闭
     ::close(epollfd_);
   }
 }
 
-void EPoller::addChannel(Channel *channel) {
+void Epoll::add(Channel *channel) {
   assert(channel != nullptr);
   assert(channel->fd() != -1);
   assert(channel->getState() != Channel::kAdded);
@@ -42,7 +42,7 @@ void EPoller::addChannel(Channel *channel) {
   channel->setState(Channel::kAdded);
 }
 
-void EPoller::modifyChannel(Channel *channel) {
+void Epoll::modify(Channel *channel) {
   assert(channel != nullptr);
   assert(channel->fd() != -1);
 
@@ -71,7 +71,7 @@ void EPoller::modifyChannel(Channel *channel) {
   }
 }
 
-void EPoller::removeChannel(Channel *channel) {
+void Epoll::remove(Channel *channel) {
   assert(channel != nullptr);
   int fd = channel->fd();
   assert(fd2Channel_.count(fd) != 0 && fd2Channel_[fd] == channel);
@@ -85,8 +85,8 @@ void EPoller::removeChannel(Channel *channel) {
   channel->setState(Channel::kNew);
 }
 
-Timer::TimeType EPoller::poll(int maxEvent, int waitMs,
-                              std::vector<Channel *> &activeChannels) {
+Timer::TimeType Epoll::poll(int maxEvent, int waitMs,
+                            std::vector<Channel *> &activeChannels) {
   // 确保 epollfd 已经初始化
   assert(epollfd_ != -1);
   assert(maxEvent > 0);

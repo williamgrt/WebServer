@@ -1,6 +1,6 @@
 #include "Channel.h"
 #include "EventLoop.h"
-#include "Utils.h"
+#include "Defs.h"
 #include <poll.h>
 #include <sys/epoll.h>
 
@@ -103,8 +103,8 @@ void Channel::handleEvent() {
 
 void Channel::update() {
   if (state_ == kAdded) {
-    loop_->modifyChannel(this);
+    loop_->modify(this);
   } else {
-    loop_->addChannel(this);
+    loop_->add(this);
   }
 }

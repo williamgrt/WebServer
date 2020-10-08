@@ -5,7 +5,7 @@
 #include <list>
 #include "../base/noncopyable.h"
 #include "TcpServer.h"
-#include "Utils.h"
+#include "Defs.h"
 
 namespace web {
 
@@ -15,7 +15,7 @@ class HeartBeatTcpServer : noncopyable {
   ~HeartBeatTcpServer();
 
   void setThreadNum(int threadNum) {
-    server_.setThreadNum(threadNum);
+    server_.setReactorNum(threadNum);
   }
 
   void start() {
@@ -39,12 +39,11 @@ class HeartBeatTcpServer : noncopyable {
   }
 
  private:
-  // 添加了定时功能的回调函数
-  void onConnect(const TcpConnectionPtr &conn);
-  void onMessage(const TcpConnectionPtr &conn, Buffer *buffer);
-  /*****
-   * @brief
-   */
+  // 回调函数
+  void onConnect(const TcpConnPtr &conn);
+  void onMessage(const TcpConnPtr &conn, Buffer *buffer);
+
+
   void onTimeout();
 
   EventLoop *loop_;
@@ -59,14 +58,14 @@ class HeartBeatTcpServer : noncopyable {
   // 过期时间戳
   struct Timestamp {
    public:
-    Timestamp(const TcpConnectionPtr &conn) :
+    Timestamp(const TcpConnPtr &conn) :
         conn_(conn) {
     }
 
     ~Timestamp() {
       // 在析构函数中关闭超时连接
       // 使用weak_ptr监视connection
-      TcpConnectionPtr conn = conn_.lock();
+      TcpConnPtr conn = conn_.lock();
       // 如果当前的连接没有被析构
       if (conn) {
         conn->forceClose();

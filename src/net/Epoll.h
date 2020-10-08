@@ -12,19 +12,19 @@ namespace web {
 class EventLoop;
 class Channel;
 
-class EPoller : noncopyable {
+class Epoll : noncopyable {
  private:
   int epollfd_;
   std::vector<epoll_event> events_;
   std::unordered_map<int, Channel *> fd2Channel_;
 
  public:
-  EPoller();
-  ~EPoller();
+  Epoll();
+  ~Epoll();
 
-  void addChannel(Channel *channel);
-  void modifyChannel(Channel *channel);
-  void removeChannel(Channel *channel);
+  void add(Channel *channel);
+  void modify(Channel *channel);
+  void remove(Channel *channel);
 
   int fd() const { return epollfd_; }
 

@@ -9,7 +9,7 @@
 
 namespace web {
 class Channel;
-class EPoller;
+class Epoll;
 
 class EventLoop {
 
@@ -20,9 +20,9 @@ public:
   ~EventLoop();
 
   /* ------------------ 对 channel 执行的操作 ------------------ */
-  void addChannel(Channel *channel);
-  void modifyChannel(Channel *channel);
-  void deleteChannel(Channel *channel);
+  void add(Channel *channel);
+  void modify(Channel *channel);
+  void remove(Channel *channel);
 
   /* ------------------ EventLoop 运行函数 ------------------ */
   void loop();
@@ -44,7 +44,7 @@ private:
   bool looping_;
   bool quit_;
   int eventCapacity_;
-  std::unique_ptr<EPoller> poller_; // 执行 epoll 操作多路复用器
+  std::unique_ptr<Epoll> poller_; // 执行 epoll 操作多路复用器
   std::thread::id ownerId_; // EventLoop 所处的线程（保证每个线程只有一个 EventLoop）
 
   std::mutex mutex_; // 保护任务队列

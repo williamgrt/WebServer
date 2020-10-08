@@ -4,7 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include "../base/noncopyable.h"
+#include "Defs.h"
 
 namespace web {
 class EventLoop;

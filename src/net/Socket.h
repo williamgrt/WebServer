@@ -5,7 +5,7 @@
 #ifndef WEBSERVER_SRC_NET_SOCKET_H
 #define WEBSERVER_SRC_NET_SOCKET_H
 
-#include "Utils.h"
+#include "Defs.h"
 #include "../base/noncopyable.h"
 #include <string>
 #include <arpa/inet.h>

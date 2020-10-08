@@ -25,7 +25,7 @@ TcpServer::TcpServer(EventLoop *loop, const std::string &hostname, unsigned int 
 TcpServer::~TcpServer() {
   for (auto &element: connectionMap_) {
     // 关闭所有没有删除的连接
-    TcpConnectionPtr conn = element.second;
+    TcpConnPtr conn = element.second;
     int n = connectionMap_.erase(element.first);
     assert(n == 1);
     // 将conn的生命周期延长到 connectDestroy 执行完毕
@@ -38,19 +38,18 @@ void TcpServer::start() {
     started_ = true;
   }
   threadPool_->start();
-  // 为了保证所有的I/O操作都在 EventLoop 中执行
+  // 保证所有的I/O相关的操作都是在一个线程内执行的
   loop_->runInLoop(std::bind(&Acceptor::listen, acceptor_.get()));
 }
 
 void TcpServer::newConnection(Socket &&socket, Ip4Addr peerAddr) {
-  // 在 EventLoop 中执行
   loop_->assertInLoopThread();
   // 添加新的连接，给每个连接一个名字
   string connName = name_ + to_string(nextId_);
   nextId_++;
   // 创建新的连接，并保存指向连接的指针
   EventLoop *ioLoop = threadPool_->getNextLoop();
-  TcpConnectionPtr newConn = make_shared<TcpConnection>(
+  TcpConnPtr newConn = make_shared<TcpConnection>(
       ioLoop,
       socket,
       localAddr_,
@@ -66,11 +65,11 @@ void TcpServer::newConnection(Socket &&socket, Ip4Addr peerAddr) {
       std::bind(&TcpServer::closeConnection, this, _1)
   );
   newConn->setWriteCompleteCallback(writeCompleteCallback_);
-  // 建立连接（需要添加到TcpConnection自己的 EventLoop 中）
+  // 建立连接，需要添加到TcpConnection自己的 EventLoop 中
   ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, newConn));
 }
 
-void TcpServer::closeConnection(const TcpConnectionPtr &conn) {
+void TcpServer::closeConnection(const TcpConnPtr &conn) {
   loop_->runInLoop(std::bind(&TcpServer::closeConnectionInLoop, this, conn));
 }
 
@@ -78,11 +77,11 @@ void TcpServer::handleSigpipe() {
   ::signal(SIGPIPE, SIG_IGN);
 }
 
-void TcpServer::setThreadNum(int threadNum) {
-  threadPool_->setThreadNum(threadNum);
+void TcpServer::setReactorNum(int num) {
+  threadPool_->setThreadNum(num);
 }
 
-void TcpServer::closeConnectionInLoop(const TcpConnectionPtr &conn) {
+void TcpServer::closeConnectionInLoop(const TcpConnPtr &conn) {
   loop_->assertInLoopThread();
   // 清除当前的连接
   int n = connectionMap_.erase(conn->name());

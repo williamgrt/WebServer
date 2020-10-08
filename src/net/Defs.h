@@ -9,27 +9,27 @@
 #include <unistd.h>
 #include <memory>
 #include <functional>
-#include "Timer.h"
+#include "../utils/noncopyable.h"
 
 namespace web {
 class TcpConnection;
 class Buffer;
 
 // 指向TCP连接的智能指针类型
-using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
+using TcpConnPtr = std::shared_ptr<TcpConnection>;
 
 // 建立连接的回调函数类型
-using ConnectionCallback = std::function<void(const TcpConnectionPtr &)>;
+using ConnectionCallback = std::function<void(const TcpConnPtr &)>;
 
 // 接收到消息后调用的回调函数
-using MessageCallback = std::function<void(const TcpConnectionPtr,
+using MessageCallback = std::function<void(const TcpConnPtr,
                                            Buffer *)>;
 
 // 关闭连接时的回调函数
-using CloseCallback = std::function<void(const TcpConnectionPtr &)>;
+using CloseCallback = std::function<void(const TcpConnPtr &)>;
 
 // 写完成后调用的回调函数
-using WriteCompleteCallback = std::function<void(const TcpConnectionPtr &)>;
+using WriteCompleteCallback = std::function<void(const TcpConnPtr &)>;
 
 }
 

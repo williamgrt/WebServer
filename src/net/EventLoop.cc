@@ -1,7 +1,7 @@
 #include "EventLoop.h"
 #include "Channel.h"
-#include "EPoller.h"
-#include "Utils.h"
+#include "Epoll.h"
+#include "Defs.h"
 #include <algorithm>
 #include <sys/eventfd.h>
 
@@ -11,10 +11,6 @@ using namespace std;
 thread_local web::EventLoop *loopInThisThread = nullptr; // 当前线程的 EventLoop, 保证 one loop per thread
 const int MAX_EVENT_NUM = 1024;
 
-/*****
- * @brief
- * @return
- */
 int createEventFd() {
   int evfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
   if (evfd < 0) {
@@ -28,7 +24,7 @@ EventLoop::EventLoop()
     : looping_(false),
       quit_(false),
       eventCapacity_(MAX_EVENT_NUM),
-      poller_(new EPoller()),
+      poller_(new Epoll()),
       ownerId_(this_thread::get_id()),
       wakeupFd_(createEventFd()),
       wakeupChannel_(new Channel(this, wakeupFd_)),
@@ -45,25 +41,25 @@ EventLoop::~EventLoop() {
   loopInThisThread = nullptr;
 }
 
-void EventLoop::addChannel(Channel *channel) {
+void EventLoop::add(Channel *channel) {
   assert(channel != nullptr);
   assert(channel->getLoop() == this);
 
-  poller_->addChannel(channel);
+  poller_->add(channel);
 }
 
-void EventLoop::modifyChannel(Channel *channel) {
+void EventLoop::modify(Channel *channel) {
   assert(channel != nullptr);
   assert(channel->getState() == Channel::kAdded);
   assert(channel->getLoop() == this);
-  poller_->modifyChannel(channel);
+  poller_->modify(channel);
 }
 
-void EventLoop::deleteChannel(Channel *channel) {
+void EventLoop::remove(Channel *channel) {
   assert(channel != nullptr);
   assert(channel->getState() == Channel::kAdded);
   assert(channel->getLoop() == this);
-  poller_->removeChannel(channel);
+  poller_->remove(channel);
 }
 
 void EventLoop::loop() {

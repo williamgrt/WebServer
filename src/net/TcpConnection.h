@@ -2,7 +2,7 @@
 #define WEBSERVER_SRC_NET_TCPCONNECTION_H
 
 #include <string>
-#include "Utils.h"
+#include "Defs.h"
 #include "Socket.h"
 #include "Buffer.h"
 

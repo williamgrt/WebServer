@@ -8,7 +8,7 @@ namespace web {
 using Callback = std::function<void()>;
 
 class EventLoop;
-class EPoller;
+class Epoll;
 
 class Channel {
 public:

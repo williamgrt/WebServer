@@ -3,8 +3,7 @@
 
 #include <memory>
 #include <unordered_map>
-#include "Utils.h"
-#include "../base/noncopyable.h"
+#include "Defs.h"
 #include "Socket.h"
 #include "Acceptor.h"
 #include "TcpConnection.h"
@@ -22,33 +21,38 @@ class TcpServer : noncopyable {
   TcpServer(EventLoop *loop, const std::string &hostname, unsigned int port);
   ~TcpServer();
 
-  void setThreadNum(int threadNum);
+  // 设置sub-reactor的数量
+  void setReactorNum(int num);
   void start();
 
+  // 设置回调函数
   void setConnectionCallback(const ConnectionCallback &cb) {
     connectionCallBack_ = cb;
   }
+
   void setMessageCallback(const MessageCallback &cb) {
     messageCallBack_ = cb;
   }
+
   void setWriteCompleteCallback(const WriteCompleteCallback &cb) {
     writeCompleteCallback_ = cb;
   }
-  EventLoop *getLoop() {
+
+  EventLoop *loop() {
     return loop_;
   }
 
  private:
-  using ConnectionMap = std::unordered_map<std::string, TcpConnectionPtr>;
+  using ConnectionMap = std::unordered_map<std::string, TcpConnPtr>;
 
   // Acceptor创建新连接的回调函数
   void newConnection(Socket &&socket, Ip4Addr peerAddr);
   // 清除TCP连接
-  void closeConnection(const TcpConnectionPtr &conn);
+  void closeConnection(const TcpConnPtr &conn);
   // 处理sigpipe信号
   void handleSigpipe();
   // 有可能TcpConnection和TcpServer不在同一个EventLoop中，此时需要把关闭连接的操作移到TcpServer的EvetLoop中
-  void closeConnectionInLoop(const TcpConnectionPtr &conn);
+  void closeConnectionInLoop(const TcpConnPtr &conn);
 
   EventLoop *loop_;
   std::unique_ptr<Acceptor> acceptor_;

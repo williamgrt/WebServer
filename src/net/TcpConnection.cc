@@ -28,11 +28,11 @@ TcpConnection::TcpConnection(EventLoop *loop,
   channel_->setCloseCallback(std::bind(&TcpConnection::handleClose, this));
   channel_->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
   // TODO: change standard output to log output
-  cout << "TcpConnection create\n";
+
 }
 
 TcpConnection::~TcpConnection() {
-  cout << "TcpConnection close " << name_ << " at " << this << " fd = " << channel_->fd() << "\n";
+  // cout << "TcpConnection close " << name_ << " at " << this << " fd = " << channel_->fd() << "\n";
 }
 
 void TcpConnection::connectEstablished() {
@@ -97,7 +97,7 @@ void TcpConnection::connectDestroyed() {
   // 有可能直接调用本函数销毁连接，此时需要通知 poller 不需要监听
   channel_->disableAll();
   // 移除连接
-  loop_->deleteChannel(channel_.get());
+  loop_->remove(channel_.get());
 }
 
 void TcpConnection::handleError() {

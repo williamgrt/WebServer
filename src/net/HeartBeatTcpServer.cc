@@ -10,17 +10,17 @@ HeartBeatTcpServer::HeartBeatTcpServer(EventLoop *loop, const string &hostname, 
     server_(loop, hostname, port),
     keepaliveTimeout_(aliveSec_) {
   // 每秒调用一次timeout处理程序
-  server_.getLoop()->runEvery(1.0, std::bind(&HeartBeatTcpServer::onTimeout, this));
+  server_.loop()->runEvery(1.0, std::bind(&HeartBeatTcpServer::onTimeout, this));
   server_.setConnectionCallback(std::bind(&HeartBeatTcpServer::onConnect, this, _1));
   server_.setMessageCallback(std::bind(&HeartBeatTcpServer::onMessage, this, _1, _2));
   server_.setWriteCompleteCallback(writeCompleteCallback_);
-  //
+  // 初始化时间轮
   bucket_.resize(keepaliveTimeout_);
 }
 
 HeartBeatTcpServer::~HeartBeatTcpServer() = default;
 
-void HeartBeatTcpServer::onConnect(const TcpConnectionPtr &conn) {
+void HeartBeatTcpServer::onConnect(const TcpConnPtr &conn) {
   if (connectionCallback_) {
     connectionCallback_(conn);
   }
@@ -39,10 +39,11 @@ void HeartBeatTcpServer::onConnect(const TcpConnectionPtr &conn) {
     loop_->runInLoop(std::bind(&HeartBeatTcpServer::addTimestamp, this, timestampPtr));
   } else {
     // TODO:
+
   }
 }
 
-void HeartBeatTcpServer::onMessage(const TcpConnectionPtr &conn, Buffer *buffer) {
+void HeartBeatTcpServer::onMessage(const TcpConnPtr &conn, Buffer *buffer) {
   if (messageCallback_) {
     messageCallback_(conn, buffer);
   }

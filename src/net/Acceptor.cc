@@ -1,6 +1,7 @@
 #include "Acceptor.h"
 #include "Channel.h"
 #include "EventLoop.h"
+#include "Defs.h"
 
 using namespace web;
 using namespace std;

@@ -49,6 +49,7 @@ void Buffer::ensureSize(size_t len) {
   // 实现的是最简单的resize，以后根据需要修改
   buffer_.resize(writeIndex_ + len);
 }
+
 void Buffer::retrieve(size_t len) {
   assert(len <= readableBytes());
   if (len < readableBytes()) {

@@ -6,7 +6,7 @@
 using namespace web;
 using namespace std;
 
-void onConnection(const TcpConnectionPtr &conn) {
+void onConnection(const TcpConnPtr &conn) {
   if (conn->connected()) {
     cout << "onConnection(): new connection [" << conn->name() << "] from " << conn->getPeerAddr().getHostPort()
          << "in thread " << this_thread::get_id() << "\n";
@@ -15,7 +15,7 @@ void onConnection(const TcpConnectionPtr &conn) {
   }
 }
 
-void onMessage(const TcpConnectionPtr &conn, Buffer *buffer) {
+void onMessage(const TcpConnPtr &conn, Buffer *buffer) {
   conn->send(buffer->retrieveAsString());
 }
 

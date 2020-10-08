@@ -1,7 +1,7 @@
 set(NET_LIB
     Channel.cc
     EventLoop.cc
-    EPoller.cc
+    Epoll.cc
     Socket.cc
     Timer.cc
     Acceptor.cc
