@@ -1,6 +1,7 @@
 #include <iostream>
 #include "../TcpServer.h"
 #include "../EventLoop.h"
+#include "../HeartBeatTcpServer.h"
 
 using namespace web;
 using namespace std;
@@ -22,7 +23,8 @@ int main(int argc, char **argv) {
   printf("main(): pid = %d\n", getpid());
   EventLoop loop;
   unsigned int port = 12345;
-  TcpServer server(&loop, "", port);
+  HeartBeatTcpServer server(&loop, "", port, 10);
+  // TcpServer server(&loop, "", port);
   int threadNum = atoi(argv[1]);
 
   server.setThreadNum(threadNum);

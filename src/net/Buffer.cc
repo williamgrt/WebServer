@@ -11,7 +11,7 @@ Buffer::Buffer(size_t init) :
     readIndex_(kPrepareSize),
     writeIndex_(kPrepareSize) {}
 
-size_t Buffer::readFrom(int fd, int *error) {
+size_t Buffer::readFromFd(int fd, int *error) {
   // 使用readv读取
   // TODO: 为什么更好？解释原因
   // 增加一块位于栈的缓冲区，基本可以满足读取需求

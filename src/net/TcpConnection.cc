@@ -64,7 +64,7 @@ void TcpConnection::shutdown() {
 void TcpConnection::handleRead() {
   loop_->assertInLoopThread();
   int saveError = 0;
-  int n = inputBuffer_.readFrom(channel_->fd(), &saveError);
+  int n = inputBuffer_.readFromFd(channel_->fd(), &saveError);
   if (n > 0) {
     // 对方发送了新的消息
     if (messageCallback_) {

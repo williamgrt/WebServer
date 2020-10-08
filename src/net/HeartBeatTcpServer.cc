@@ -6,6 +6,7 @@ using namespace web;
 using namespace std::placeholders;
 
 HeartBeatTcpServer::HeartBeatTcpServer(EventLoop *loop, const string &hostname, unsigned int port, int aliveSec_) :
+    loop_(loop),
     server_(loop, hostname, port),
     keepaliveTimeout_(aliveSec_) {
   // 每秒调用一次timeout处理程序
@@ -17,9 +18,7 @@ HeartBeatTcpServer::HeartBeatTcpServer(EventLoop *loop, const string &hostname, 
   bucket_.resize(keepaliveTimeout_);
 }
 
-HeartBeatTcpServer::~HeartBeatTcpServer() {
-
-}
+HeartBeatTcpServer::~HeartBeatTcpServer() = default;
 
 void HeartBeatTcpServer::onConnect(const TcpConnectionPtr &conn) {
   if (connectionCallback_) {
