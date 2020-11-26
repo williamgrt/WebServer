@@ -26,7 +26,7 @@ enum Level {
 // 异步日志
 // 设计思路如下：
 //
-class Log: noncopyable {
+class Log : noncopyable {
  public:
   Log();
   ~Log();
@@ -38,7 +38,7 @@ class Log: noncopyable {
   void write(Level level, char c);
   void write(Level level, const std::string &log);
 
-  static Log* getInstance() {
+  static Log *getInstance() {
     return Singleton<Log>::getInstance();
   }
 
@@ -57,7 +57,8 @@ class Log: noncopyable {
   FILE *file_; // 日志文件
   std::atomic_bool stop_;
   Sequence lastRead_; // 最后一个读的位置
-  Sequence lastWrite_; // 最后一个写入的位置
+  Sequence lastWrote_; // 最后一个写入的位置
+  Sequence next_; // 下一个可以写入的位置
   std::mutex mutex_;
   std::condition_variable condVar_;
   // 所有日志级别对应的字符串

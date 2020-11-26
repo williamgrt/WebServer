@@ -12,8 +12,9 @@ Log::Log() :
     ringBuffer_(Params::BUF_LEN, string()),
     currSec_(Time::nowSec()),
     stop_(false),
-    lastRead_(0),
-    lastWrite_(0) {
+    lastRead_(-1L),
+    lastWrote_(-1L),
+    next_(0) {
   file_ = fopen(LOG_NAME, "w");
   // 创建后端写入线程
   backThread_ = make_unique<thread>([this] {
@@ -60,10 +61,14 @@ void Log::write(const string &log) {
   memcpy(&*(writeLog.begin() + timeStr_.size() + 1), log.data(), log.size());
   writeLog.back() = '\n';
   // 找到写入的位置
-  auto currWrite = lastWrite_.fetch_add(1);
+  // FIXME: Have bug when flush thread is too fast
+  auto currWrite = next_.fetch_add(1);
   ringBuffer_[currWrite & (Params::BUF_LEN - 1)] = std::move(writeLog);
-  if (currWrite == lastRead_.load()) {
-    // 唤醒后端刷新线程
+  // 等待前面的日志写入到内部
+  while (currWrite != lastWrote_.load()) {}
+  // 正式更改写入位置
+  lastWrote_.store(currWrite);
+  if (currWrite == lastRead_.load() + 1) {
     condVar_.notify_one();
   }
 }
@@ -71,21 +76,20 @@ void Log::write(const string &log) {
 void Log::updateTime() {
   currSec_ = Time::now();
   struct tm *tm;
-
+  // TODO: cache current time
 }
 
 void Log::flushToDisk() {
   while (true) {
-    if (stop_.load() && lastWrite_.load() == lastRead_.load()) {
+    if (stop_.load() && lastWrote_.load() == lastRead_.load()) {
       return;
     }
-    while (lastRead_.load() < lastWrite_.load()) {
+    while (lastRead_.load() < lastWrote_.load()) {
       // 还有日志没有写完
-      while (lastRead_.load() < lastWrite_.load()) {
+      while (lastRead_.load() < lastWrote_.load()) {
         int64_t currRead = lastRead_.fetch_add(1);
         string data = ringBuffer_[currRead & (Params::BUF_LEN - 1)];
         fwrite(data.data(), data.size(), 1, file_);
-
         data.clear();
       }
       // 写完了所有的日志，刷新缓冲区
@@ -93,7 +97,7 @@ void Log::flushToDisk() {
       // 所有的日志都写完了，写线程等待被唤醒
       {
         unique_lock<mutex> lock(mutex_);
-        while (!stop_.load() && lastRead_.load() == lastWrite_.load()) {
+        while (!stop_.load() && lastRead_.load() == lastWrote_.load()) {
           condVar_.wait(lock);
         }
       }
