@@ -25,5 +25,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
-add_subdirectory(gnet)
-add_subdirectory(http)
+add_subdirectory(log)
+add_subdirectory(net)
+add_subdirectory(utils)
+add_subdirectory(examples)
