@@ -36,33 +36,24 @@ class TcpConnection : noncopyable,
   void connectEstablished();
   void connectDestroyed();
 
-  /*****
-   * @brief 发送消息给连接的对方，实际的写操作需要到I/O线程中执行。
-   * @param data 待发送的消息。
-   */
+  // 发送消息给连接的对方，实际的写操作需要到I/O线程中执行。
   void send(const std::string &data);
 
-  /* ---------- 连接关闭操作 ---------- */
-
-  /*****
-   * @brief 主动关闭写端，实现优雅断开，实际的I/O操作需要到线程中执行。
-   */
+  // 主动关闭写端，实现优雅断开，实际的I/O操作需要到线程中执行。
   void shutdown();
-  /*****
-   * @brief 强制关闭连接
-   */
+
+  // 强制关闭连接
   void forceClose();
+
+  // 延迟关闭连接
   void delayClose(int seconds);
 
-  /*****
-   * @brief 关闭Nagle算法
-   */
+  // 禁用Nagle算法
   void setNoDelay() {
     socket_->setNoDelay();
   }
-  /*****
-   * @brief 可以重用连接地址
-   */
+
+  // 重用地址
   void setReuseAddr() {
     socket_->setReuseAddr();
   }

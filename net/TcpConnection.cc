@@ -28,7 +28,6 @@ TcpConnection::TcpConnection(EventLoop *loop,
   channel_->setReadCallback(std::bind(&TcpConnection::handleRead, this));
   channel_->setCloseCallback(std::bind(&TcpConnection::handleClose, this));
   channel_->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
-  // TODO: change standard output to log output
   LOG_INFO("create a new TcpConnection");
 }
 

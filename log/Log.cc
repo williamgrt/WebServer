@@ -64,11 +64,10 @@ void Log::write(const string &log) {
   memcpy(&*(writeLog.begin() + timeStr_.size() + 1), log.data(), log.size());
   writeLog.back() = '\n';
   // 找到写入的位置
-  // FIXME: Have bug when flush thread is too fast
   auto currWrite = next_.fetch_add(1);
   ringBuffer_[currWrite & (Params::BUF_LEN - 1)] = std::move(writeLog);
   // 等待前面的日志写入到内部
-  while (currWrite != lastWrote_.load()) {}
+  while (currWrite - 1L != lastWrote_.load()) {}
   // 正式更改写入位置
   lastWrote_.store(currWrite);
   if (currWrite == lastRead_.load() + 1) {
@@ -108,4 +107,3 @@ void Log::flushToDisk() {
     }
   }
 }
-

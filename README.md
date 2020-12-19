@@ -1,10 +1,14 @@
 # gev
-A C++11 network library based on reactor model.
 
-一个基于Reactor模式的网络库。
+基于事件驱动机制实现的多线程网络编程框架，采用C++11实现。
 
 ## 简介
 
+基于Reactor模式实现的
 
-### 网络模型
+## 使用
+实现一个`Echo`服务。
 
+```C++
+
+```
