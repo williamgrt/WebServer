@@ -91,11 +91,13 @@ void TcpConnection::handleClose() {
 void TcpConnection::connectDestroyed() {
   loop_->assertInLoopThread();
   // 调整连接状态
-  assert(state_ == kConnected || state_ == kDisconnecting);
-  setState(kDisconnected);
+  if (state_ == kConnected) {
+    setState(kDisconnected);
+    // 有可能直接调用本函数销毁连接，此时需要通知 poller 不需要监听
+    channel_->disableAll();
 
-  // 有可能直接调用本函数销毁连接，此时需要通知 poller 不需要监听
-  channel_->disableAll();
+    connectionCallback_(shared_from_this());
+  }
   // 移除连接
   loop_->remove(channel_.get());
 }
